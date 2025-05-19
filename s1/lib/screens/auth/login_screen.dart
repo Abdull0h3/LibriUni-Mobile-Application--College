@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Library Management System',
+                  'Access Your Library Anywhere, Everywhere',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
