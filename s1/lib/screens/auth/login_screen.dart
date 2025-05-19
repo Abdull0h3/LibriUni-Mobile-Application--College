@@ -28,8 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Immediately show loading state locally to prevent double-clicks
-    setState(() => _localLoading = true);
+    setState(() => _localLoading = true); // to show loading spinner
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     authProvider.clearError();
@@ -40,7 +39,11 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
 
-      if (!success && mounted) {
+      if (success && mounted) {
+        // THIS LINE IS NEW: Navigate after successful login
+        context.go('/student'); // change this path if needed
+      } else if (!success && mounted) {
+        // Existing error message if login failed
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authProvider.error ?? 'Login failed'),
@@ -50,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() => _localLoading = false);
+        setState(() => _localLoading = false); // end loading spinner
       }
     }
   }
@@ -90,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Access Your Library Anywhere, Everywhere',
+                  'Access Your Library Anywhere, Everywhere.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,

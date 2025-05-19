@@ -49,7 +49,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               },
             ),
           ),
-          IconButton(
+          /*IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
               context.push('/student/profile');
@@ -60,7 +60,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             onPressed: () {
               // Navigate to chat support
             },
-          ),
+          ),*/
           CircleAvatar(
             radius: 16,
             backgroundColor: AppColors.secondary,
@@ -137,8 +137,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           ],
         ),
       ),
+      // New bottomNAvigationBar
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
+        currentIndex: 0, // You can later make this dynamic if needed
+        onTap: (index) {
+          if (index == 0) return; // Already on Home
+          if (index == 1) context.push('/student/chat'); // Chat screen
+          if (index == 2) {
+            context.push('/student/profile'); // Settings/Profile screen
+          }
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
@@ -150,6 +158,21 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       ),
     );
   }
+  // Old bottomNavigationBar
+  /* bottomNavigationBar: BottomNavigationBar(
+  currentIndex: 0, // You can later make this dynamic if needed
+  onTap: (index) {
+    if (index == 0) return; // Already on Home
+    if (index == 1) context.push('/student/chat');     // Chat screen
+    if (index == 2) context.push('/student/profile');  // Settings/Profile screen
+  },
+  items: const [
+    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+    BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+    BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+  ],
+),
+ */
 
   Widget _buildDashboardCard({
     required IconData icon,

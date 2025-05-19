@@ -72,7 +72,7 @@ class AppRouter {
         builder: (context, state) => const RegisterScreen(),
       ),
 
-      // Student routes
+      // Student routes /* */
       GoRoute(
         path: '/student',
         builder: (context, state) => const StudentDashboardScreen(),
