@@ -58,7 +58,7 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
     });
     final roomProvider = Provider.of<RoomProvider>(context, listen: false);
     if (status == 'All') {
-      roomProvider.searchRooms(_searchQuery);
+      roomProvider.clearFilters();
     } else {
       roomProvider.filterByStatus(status.toLowerCase());
     }
@@ -134,9 +134,6 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: _addNewRoom),
-        ],
       ),
       body: Column(
         children: [

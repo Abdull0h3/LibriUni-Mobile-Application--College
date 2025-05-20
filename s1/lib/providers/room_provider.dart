@@ -259,4 +259,12 @@ class RoomProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  // Clear all filters and search
+  void clearFilters() {
+    _statusFilter = '';
+    _searchQuery = '';
+    _filteredRooms = List.from(_rooms);
+    notifyListeners();
+  }
 }

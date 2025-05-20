@@ -57,8 +57,7 @@ class _ManageBooksScreenState extends State<ManageBooksScreen> {
     });
     final bookProvider = Provider.of<BookProvider>(context, listen: false);
     if (category == 'All') {
-      // Clear filter
-      bookProvider.searchBooks(_searchQuery);
+      bookProvider.clearFilters();
     } else {
       bookProvider.filterByCategory(category);
     }
@@ -128,9 +127,6 @@ class _ManageBooksScreenState extends State<ManageBooksScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: _addNewBook),
-        ],
       ),
       body: Column(
         children: [

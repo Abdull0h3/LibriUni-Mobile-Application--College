@@ -40,8 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (success && mounted) {
-        // THIS LINE IS NEW: Navigate after successful login
-        context.go('/student'); // change this path if needed
+        // Let the router handle the redirection based on user role
+        context.go('/');
       } else if (!success && mounted) {
         // Existing error message if login failed
         ScaffoldMessenger.of(context).showSnackBar(

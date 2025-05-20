@@ -58,8 +58,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     });
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (userType == 'All') {
-      // Clear filter
-      userProvider.searchUsers(_searchQuery);
+      userProvider.clearFilters();
     } else {
       // Convert string to UserRole
       UserRole role;
@@ -151,9 +150,6 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: _addNewUser),
-        ],
       ),
       body: Column(
         children: [

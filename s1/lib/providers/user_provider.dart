@@ -256,4 +256,12 @@ class UserProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  // Clear all filters and search
+  void clearFilters() {
+    _roleFilter = null;
+    _searchQuery = '';
+    _filteredUsers = List.from(_users);
+    notifyListeners();
+  }
 }
