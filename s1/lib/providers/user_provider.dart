@@ -1,6 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'dart:math';
+
+class UserAddResult {
+  final bool success;
+  final String? error;
+  UserAddResult({required this.success, this.error});
+}
 
 class UserProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -56,45 +64,87 @@ class UserProvider with ChangeNotifier {
   }
 
   // Add a new user
-  Future<bool> addUser(User user) async {
+  Future<UserAddResult> addUser(User user, {required String password}) async {
     try {
       _isLoading = true;
       notifyListeners();
-
-      // Check if a user with the same email already exists
       final QuerySnapshot existingUserQuery =
           await _firestore
               .collection(_collection)
               .where('email', isEqualTo: user.email)
               .get();
-
       if (existingUserQuery.docs.isNotEmpty) {
         _error = 'A user with this email already exists';
         _isLoading = false;
         notifyListeners();
-        return false;
+        return UserAddResult(success: false, error: _error);
       }
-
-      // Add the new user
-      final DocumentReference docRef = await _firestore
+      final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
+      final auth.UserCredential userCredential = await _firebaseAuth
+          .createUserWithEmailAndPassword(email: user.email, password: password)
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw Exception(
+                'User creation timed out. Please check your internet connection.',
+              );
+            },
+          );
+      if (userCredential.user == null) {
+        throw Exception('Failed to create authentication account');
+      }
+      final String userID = await getNextUserID(user.role);
+      final userData = user.toFirestore();
+      userData['userID'] = userID;
+      await _firestore
           .collection(_collection)
-          .add(user.toFirestore());
-
-      // Set userID field to the document ID
-      await docRef.update({'userID': docRef.id});
-
-      final newUser = user.copyWith(id: docRef.id, userID: docRef.id);
+          .doc(userCredential.user!.uid)
+          .set(userData);
+      final newUser = user.copyWith(
+        id: userCredential.user!.uid,
+        userID: userID,
+      );
       _users.add(newUser);
       _applyFilters();
-
       _isLoading = false;
       notifyListeners();
-      return true;
+      return UserAddResult(success: true);
+    } on auth.FirebaseAuthException catch (e) {
+      _isLoading = false;
+      _error = _formatAuthError(e.message ?? 'Authentication error occurred');
+      notifyListeners();
+      return UserAddResult(success: false, error: _error);
     } catch (e) {
       _isLoading = false;
       _error = e.toString();
       notifyListeners();
-      return false;
+      return UserAddResult(success: false, error: _error);
+    }
+  }
+
+  // Generate a secure random password
+  String _generateSecurePassword() {
+    const String chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%^&*()';
+    final random = Random.secure();
+    return List.generate(
+      12,
+      (index) => chars[random.nextInt(chars.length)],
+    ).join();
+  }
+
+  // Format Firebase Auth error messages
+  String _formatAuthError(String error) {
+    if (error.contains('email-already-in-use')) {
+      return 'This email is already registered';
+    } else if (error.contains('invalid-email')) {
+      return 'Invalid email address';
+    } else if (error.contains('weak-password')) {
+      return 'Password is too weak';
+    } else if (error.contains('network-request-failed')) {
+      return 'Network error. Please check your internet connection';
+    } else {
+      return 'An error occurred: $error';
     }
   }
 

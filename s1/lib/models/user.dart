@@ -44,12 +44,13 @@ class User {
   final bool isActive;
   final String? photoUrl;
   final String? phoneNumber;
+  final String? userID;
 
   // Additional fields needed by our screens
   final String? profilePictureUrl;
+  final String? studentId;
   final String? department;
   final String? phone;
-  final String? userID;
 
   User({
     required this.id,
@@ -59,10 +60,11 @@ class User {
     required this.isActive,
     this.photoUrl,
     this.phoneNumber,
+    this.userID,
     this.profilePictureUrl,
+    this.studentId,
     this.department,
     this.phone,
-    this.userID,
   });
 
   /// Create a User from a Firestore document
@@ -76,10 +78,11 @@ class User {
       isActive: data['isActive'] ?? true,
       photoUrl: data['photoUrl'],
       phoneNumber: data['phoneNumber'],
+      userID: data['userID'],
       profilePictureUrl: data['profilePictureUrl'] ?? data['photoUrl'],
+      studentId: data['studentId'],
       department: data['department'],
       phone: data['phone'] ?? data['phoneNumber'],
-      userID: data['userID'],
     );
   }
 
@@ -92,10 +95,11 @@ class User {
       'isActive': isActive,
       'photoUrl': photoUrl,
       'phoneNumber': phoneNumber,
+      'userID': userID,
       'profilePictureUrl': profilePictureUrl,
+      'studentId': studentId,
       'department': department,
       'phone': phone,
-      'userID': userID,
     };
   }
 
@@ -108,10 +112,11 @@ class User {
     bool? isActive,
     String? photoUrl,
     String? phoneNumber,
+    String? userID,
     String? profilePictureUrl,
+    String? studentId,
     String? department,
     String? phone,
-    String? userID,
   }) {
     return User(
       id: id ?? this.id,
@@ -121,10 +126,11 @@ class User {
       isActive: isActive ?? this.isActive,
       photoUrl: photoUrl ?? this.photoUrl,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      userID: userID ?? this.userID,
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      studentId: studentId ?? this.studentId,
       department: department ?? this.department,
       phone: phone ?? this.phone,
-      userID: userID ?? this.userID,
     );
   }
 }
