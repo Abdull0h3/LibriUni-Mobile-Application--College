@@ -41,53 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCKbkjiplVzV1FZDc2NthAqsaHRaWA9xWU',
-    appId: '1:958799227985:web:603f79dd022d61c61ddc70',
-    messagingSenderId: '958799227985',
-    projectId: 'backend-demo-900a7',
-    authDomain: 'backend-demo-900a7.firebaseapp.com',
-    databaseURL: 'https://backend-demo-900a7-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'backend-demo-900a7.firebasestorage.app',
-    measurementId: 'G-MD8640SFG4',
+    apiKey: 'AIzaSyA1mMP2cqeABeKOzuGN2dCTrepmyVb-Lzs',
+    appId: '1:917377388614:web:cd1d5592a83bf03ea6ba47',
+    messagingSenderId: '917377388614',
+    projectId: 'mae-group26',
+    authDomain: 'mae-group26.firebaseapp.com',
+    storageBucket: 'mae-group26.firebasestorage.app',
+    measurementId: 'G-QEREGW17KP',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDXNJ8cPDmxrKQV8IFTAi0B2tWlcQhQ1cY',
-    appId: '1:958799227985:android:45a7d9fa7f68c7011ddc70',
-    messagingSenderId: '958799227985',
-    projectId: 'backend-demo-900a7',
-    databaseURL: 'https://backend-demo-900a7-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'backend-demo-900a7.firebasestorage.app',
+    apiKey: 'AIzaSyD7Hf1H88lW7WHA2QpA94o2mDVu9hbitHU',
+    appId: '1:917377388614:android:b4d48210030da1ffa6ba47',
+    messagingSenderId: '917377388614',
+    projectId: 'mae-group26',
+    storageBucket: 'mae-group26.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBWye3hVz8sSp0wXIZMqaSdr1bOX0PUrO8',
-    appId: '1:958799227985:ios:14506ddf464bac991ddc70',
-    messagingSenderId: '958799227985',
-    projectId: 'backend-demo-900a7',
-    databaseURL: 'https://backend-demo-900a7-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'backend-demo-900a7.firebasestorage.app',
-    iosBundleId: 'com.example.s1',
+    apiKey: 'AIzaSyAYYBS5NPHYNwJi-vaeqyy8MWPEIPoXrpE',
+    appId: '1:917377388614:ios:e83b673e726ca9e5a6ba47',
+    messagingSenderId: '917377388614',
+    projectId: 'mae-group26',
+    storageBucket: 'mae-group26.firebasestorage.app',
+    iosBundleId: 'com.example.addMap',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBWye3hVz8sSp0wXIZMqaSdr1bOX0PUrO8',
-    appId: '1:958799227985:ios:14506ddf464bac991ddc70',
-    messagingSenderId: '958799227985',
-    projectId: 'backend-demo-900a7',
-    databaseURL: 'https://backend-demo-900a7-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'backend-demo-900a7.firebasestorage.app',
-    iosBundleId: 'com.example.s1',
+    apiKey: 'AIzaSyAYYBS5NPHYNwJi-vaeqyy8MWPEIPoXrpE',
+    appId: '1:917377388614:ios:e83b673e726ca9e5a6ba47',
+    messagingSenderId: '917377388614',
+    projectId: 'mae-group26',
+    storageBucket: 'mae-group26.firebasestorage.app',
+    iosBundleId: 'com.example.addMap',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCKbkjiplVzV1FZDc2NthAqsaHRaWA9xWU',
-    appId: '1:958799227985:web:8c027dc51c6dc8671ddc70',
-    messagingSenderId: '958799227985',
-    projectId: 'backend-demo-900a7',
-    authDomain: 'backend-demo-900a7.firebaseapp.com',
-    databaseURL: 'https://backend-demo-900a7-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'backend-demo-900a7.firebasestorage.app',
-    measurementId: 'G-5DP1RC47XN',
+    apiKey: 'AIzaSyA1mMP2cqeABeKOzuGN2dCTrepmyVb-Lzs',
+    appId: '1:917377388614:web:d820c9c8eef8d601a6ba47',
+    messagingSenderId: '917377388614',
+    projectId: 'mae-group26',
+    authDomain: 'mae-group26.firebaseapp.com',
+    storageBucket: 'mae-group26.firebasestorage.app',
+    measurementId: 'G-TJKLR1CJ8L',
   );
 }
