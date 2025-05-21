@@ -89,8 +89,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           appBar: AppBar(
             title: const Text('Profile'),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: isLoading ? null : () => context.pop(),
+              icon: const Icon(
+                Icons.arrow_back,
+              ), // changed context.pop() to context.go()
+              onPressed: isLoading ? null : () => context.go('/student'),
             ),
           ),
           body:
@@ -233,6 +235,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: 0, // Change this per screen
+            onTap: (index) {
+              if (index == 0) context.go('/student');
+              if (index == 1) context.go('/student/chat');
+              if (index == 2) context.go('/student/profile');
+            },
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: 'Settings',
+              ),
+            ],
+          ),
         ),
         // Loading overlay
         if (isLoading)

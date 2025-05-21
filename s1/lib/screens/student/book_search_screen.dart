@@ -178,7 +178,12 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
+        currentIndex: 0, // Change this per screen
+        onTap: (index) {
+          if (index == 0) context.go('/student');
+          if (index == 1) context.go('/student/chat');
+          if (index == 2) context.go('/student/profile');
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
@@ -187,11 +192,6 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
             label: 'Settings',
           ),
         ],
-        onTap: (index) {
-          if (index == 0) {
-            context.go('/student');
-          }
-        },
       ),
     );
   }
