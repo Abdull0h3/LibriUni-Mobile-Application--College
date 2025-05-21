@@ -288,42 +288,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      // Quick actions
-                      const Text(
-                        'Quick Actions',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildActionCard(
-                              'Add New Book',
-                              Icons.add_box,
-                              () => context.push('/admin/books/add'),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildActionCard(
-                              'Add New User',
-                              Icons.person_add,
-                              () => context.push('/admin/users/add'),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildActionCard(
-                              'Add New Room',
-                              Icons.add_business,
-                              () => context.push('/admin/rooms/add'),
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),

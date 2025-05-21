@@ -247,18 +247,16 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     Text(
                       book.title,
                       style: const TextStyle(
-                        fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'By ${book.author}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
+                      'ID: ' + book.id,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
+                    Text(book.author, style: const TextStyle(fontSize: 14)),
                     const SizedBox(height: 8),
                     Row(
                       children: [

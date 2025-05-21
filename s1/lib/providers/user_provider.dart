@@ -80,7 +80,10 @@ class UserProvider with ChangeNotifier {
           .collection(_collection)
           .add(user.toFirestore());
 
-      final newUser = user.copyWith(id: docRef.id);
+      // Set userID field to the document ID
+      await docRef.update({'userID': docRef.id});
+
+      final newUser = user.copyWith(id: docRef.id, userID: docRef.id);
       _users.add(newUser);
       _applyFilters();
 
@@ -243,8 +246,8 @@ class UserProvider with ChangeNotifier {
           // Filter by search query if provided
           if (_searchQuery.isNotEmpty) {
             final query = _searchQuery.toLowerCase();
-            return user.name.toLowerCase().contains(query) ||
-                user.email.toLowerCase().contains(query);
+            return user.name.toLowerCase().startsWith(query) ||
+                user.email.toLowerCase().startsWith(query);
           }
 
           return true;
@@ -263,5 +266,39 @@ class UserProvider with ChangeNotifier {
     _searchQuery = '';
     _filteredUsers = List.from(_users);
     notifyListeners();
+  }
+
+  // Generate the next userID for a given role
+  Future<String> getNextUserID(UserRole role) async {
+    String prefix;
+    switch (role) {
+      case UserRole.admin:
+        prefix = 'AD';
+        break;
+      case UserRole.staff:
+        prefix = 'STA';
+        break;
+      case UserRole.student:
+      default:
+        prefix = 'STU';
+        break;
+    }
+    final query =
+        await _firestore
+            .collection(_collection)
+            .where('role', isEqualTo: role.name)
+            .where('userID', isGreaterThanOrEqualTo: prefix)
+            .orderBy('userID', descending: true)
+            .limit(1)
+            .get();
+    if (query.docs.isNotEmpty) {
+      final lastUserID = query.docs.first['userID'] as String?;
+      if (lastUserID != null && lastUserID.startsWith(prefix)) {
+        final number =
+            int.tryParse(lastUserID.replaceAll(RegExp(r'\D'), '')) ?? 0;
+        return '$prefix${(number + 1).toString().padLeft(2, '0')}';
+      }
+    }
+    return '${prefix}01';
   }
 }

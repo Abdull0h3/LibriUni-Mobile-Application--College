@@ -47,9 +47,9 @@ class User {
 
   // Additional fields needed by our screens
   final String? profilePictureUrl;
-  final String? studentId;
   final String? department;
   final String? phone;
+  final String? userID;
 
   User({
     required this.id,
@@ -60,9 +60,9 @@ class User {
     this.photoUrl,
     this.phoneNumber,
     this.profilePictureUrl,
-    this.studentId,
     this.department,
     this.phone,
+    this.userID,
   });
 
   /// Create a User from a Firestore document
@@ -77,9 +77,9 @@ class User {
       photoUrl: data['photoUrl'],
       phoneNumber: data['phoneNumber'],
       profilePictureUrl: data['profilePictureUrl'] ?? data['photoUrl'],
-      studentId: data['studentId'],
       department: data['department'],
       phone: data['phone'] ?? data['phoneNumber'],
+      userID: data['userID'],
     );
   }
 
@@ -93,9 +93,9 @@ class User {
       'photoUrl': photoUrl,
       'phoneNumber': phoneNumber,
       'profilePictureUrl': profilePictureUrl,
-      'studentId': studentId,
       'department': department,
       'phone': phone,
+      'userID': userID,
     };
   }
 
@@ -109,9 +109,9 @@ class User {
     String? photoUrl,
     String? phoneNumber,
     String? profilePictureUrl,
-    String? studentId,
     String? department,
     String? phone,
+    String? userID,
   }) {
     return User(
       id: id ?? this.id,
@@ -122,9 +122,9 @@ class User {
       photoUrl: photoUrl ?? this.photoUrl,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-      studentId: studentId ?? this.studentId,
       department: department ?? this.department,
       phone: phone ?? this.phone,
+      userID: userID ?? this.userID,
     );
   }
 }

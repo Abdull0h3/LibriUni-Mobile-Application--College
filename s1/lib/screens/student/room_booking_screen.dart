@@ -352,88 +352,27 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: statusColor.withOpacity(0.2),
+          child: Icon(Icons.meeting_room, color: statusColor),
+        ),
+        title: Text(room.name),
+        subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  room.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    statusText,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
             Text(
-              'Capacity: ${room.capacity} people',
-              style: const TextStyle(fontSize: 14),
+              'ID: ' + room.id,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
-            if (room.location != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Location: ${room.location}',
-                style: const TextStyle(fontSize: 14),
-              ),
-            ],
-            if (room.description != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                room.description!,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: room.isReserved ? null : () => _bookRoom(room),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      room.isReserved
-                          ? AppColors.disabledBackground
-                          : AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: Text(
-                  room.isReserved ? 'Not Available' : 'Book Room',
-                  style: TextStyle(
-                    color:
-                        room.isReserved
-                            ? AppColors.textSecondary
-                            : AppColors.white,
-                  ),
-                ),
-              ),
-            ),
+            Text('Capacity: ${room.capacity}'),
+            if (room.location != null) Text('Location: ${room.location}'),
           ],
         ),
+        trailing: Text(statusText, style: TextStyle(color: statusColor)),
+        onTap: () {
+          // Room booking logic or details
+        },
       ),
     );
   }

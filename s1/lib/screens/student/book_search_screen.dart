@@ -230,6 +230,10 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
+            Text(
+              'ID: ' + book.id,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
             Text(book.author, style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 8),
             Container(

@@ -267,18 +267,14 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                                   Icons.edit,
                                   isLoading
                                       ? null
-                                      : () {
-                                        // TODO: Navigate to edit profile
-                                      },
+                                      : () => context.push('/edit-profile'),
                                 ),
                                 _buildActionButton(
                                   'Change Password',
                                   Icons.lock_outline,
                                   isLoading
                                       ? null
-                                      : () {
-                                        // TODO: Navigate to change password
-                                      },
+                                      : () => context.push('/change-password'),
                                 ),
                                 _buildActionButton(
                                   'Logout',

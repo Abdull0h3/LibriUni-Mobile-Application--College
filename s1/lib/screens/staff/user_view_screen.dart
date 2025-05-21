@@ -94,7 +94,7 @@ class _UserViewScreenState extends State<UserViewScreen> {
                 const SizedBox(height: 8),
                 _buildInfoRow('Role', user.role.capitalize()),
                 const SizedBox(height: 8),
-                _buildInfoRow('Student ID', user.studentId ?? 'N/A'),
+                _buildInfoRow('User ID', user.userID ?? 'N/A'),
                 const SizedBox(height: 8),
                 _buildInfoRow('Department', user.department ?? 'N/A'),
                 const SizedBox(height: 8),

@@ -48,15 +48,25 @@ class BookProvider with ChangeNotifier {
       if (query.isEmpty) {
         _applyFilters();
       } else {
-        final results = await _bookService.searchBooks(query);
+        final results = await _bookService.getBooks();
+        final lowerQuery = query.toLowerCase();
+        final filtered =
+            results
+                .where(
+                  (book) =>
+                      book.title.toLowerCase().startsWith(lowerQuery) ||
+                      book.author.toLowerCase().startsWith(lowerQuery) ||
+                      book.category.toLowerCase().startsWith(lowerQuery),
+                )
+                .toList();
 
         if (_selectedCategory.isNotEmpty) {
           _filteredBooks =
-              results
+              filtered
                   .where((book) => book.category == _selectedCategory)
                   .toList();
         } else {
-          _filteredBooks = results;
+          _filteredBooks = filtered;
         }
       }
 
@@ -215,9 +225,9 @@ class BookProvider with ChangeNotifier {
           // Filter by search query if provided
           if (_searchQuery.isNotEmpty) {
             final query = _searchQuery.toLowerCase();
-            return book.title.toLowerCase().contains(query) ||
-                book.author.toLowerCase().contains(query) ||
-                book.category.toLowerCase().contains(query);
+            return book.title.toLowerCase().startsWith(query) ||
+                book.author.toLowerCase().startsWith(query) ||
+                book.category.toLowerCase().startsWith(query);
           }
 
           return true;

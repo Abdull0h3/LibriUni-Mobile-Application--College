@@ -148,7 +148,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         title: const Text('Manage Users'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.go('/admin'),
         ),
       ),
       body: Column(

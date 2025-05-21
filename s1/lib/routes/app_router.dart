@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/edit_profile_screen.dart';
+import '../screens/auth/change_password_screen.dart';
 import '../screens/student/student_dashboard_screen.dart';
 import '../screens/student/book_search_screen.dart';
 import '../screens/student/book_detail_screen.dart';
@@ -70,6 +72,14 @@ class AppRouter {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
 
       // Student routes /* */

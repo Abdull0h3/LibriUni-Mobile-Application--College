@@ -18,7 +18,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _studentIdController = TextEditingController();
+  final TextEditingController _userIDController = TextEditingController();
   final TextEditingController _departmentController = TextEditingController();
   UserRole _selectedRole = UserRole.student;
   bool _isActive = true;
@@ -53,7 +53,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
       _nameController.text = _user!.name;
       _emailController.text = _user!.email;
       _phoneController.text = _user!.phone ?? '';
-      _studentIdController.text = _user!.studentId ?? '';
+      _userIDController.text = _user!.userID ?? '';
       _departmentController.text = _user!.department ?? '';
       _selectedRole = _user!.role;
       _isActive = _user!.isActive;
@@ -65,7 +65,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _studentIdController.dispose();
+    _userIDController.dispose();
     _departmentController.dispose();
     super.dispose();
   }
@@ -78,6 +78,13 @@ class _AddUserScreenState extends State<AddUserScreen> {
 
       final userProvider = Provider.of<UserProvider>(context, listen: false);
 
+      String userID = _user?.userID ?? '';
+      if (_user == null) {
+        // Only generate a new userID for new users
+        userID = await userProvider.getNextUserID(_selectedRole);
+      }
+      _userIDController.text = userID;
+
       final user = User(
         id: _user?.id ?? '', // Empty for new users, will be set by Firestore
         name: _nameController.text.trim(),
@@ -88,14 +95,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
             _phoneController.text.trim().isEmpty
                 ? null
                 : _phoneController.text.trim(),
-        studentId:
-            _selectedRole == UserRole.student
-                ? _studentIdController.text.trim()
-                : null,
         department:
             _departmentController.text.trim().isEmpty
                 ? null
                 : _departmentController.text.trim(),
+        userID: _userIDController.text.trim(),
       );
 
       bool success;
@@ -197,6 +201,16 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              // User ID (shown for all roles)
+              TextFormField(
+                controller: _userIDController,
+                enabled: false,
+                decoration: const InputDecoration(
+                  labelText: 'User ID',
+                  prefixIcon: Icon(Icons.badge),
+                ),
+              ),
+              const SizedBox(height: 16),
               // Role Selection
               InputDecorator(
                 decoration: const InputDecoration(
@@ -224,24 +238,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Student ID (only shown for students)
-              if (_selectedRole == UserRole.student)
-                TextFormField(
-                  controller: _studentIdController,
-                  decoration: const InputDecoration(
-                    labelText: 'Student ID',
-                    hintText: 'Enter student ID',
-                    prefixIcon: Icon(Icons.badge),
-                  ),
-                  validator: (value) {
-                    if (_selectedRole == UserRole.student &&
-                        (value == null || value.isEmpty)) {
-                      return 'Please enter student ID';
-                    }
-                    return null;
-                  },
-                ),
-              if (_selectedRole == UserRole.student) const SizedBox(height: 16),
               // Department
               TextFormField(
                 controller: _departmentController,

@@ -162,8 +162,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: Column(
                               children: [
                                 _buildInfoRow(
-                                  'Student ID',
-                                  user.studentId ?? 'Not available',
+                                  'User ID',
+                                  user.userID ?? 'Not available',
                                 ),
                                 const Divider(),
                                 _buildInfoRow(
@@ -200,18 +200,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   Icons.edit,
                                   isLoading
                                       ? null
-                                      : () {
-                                        // TODO: Navigate to edit profile
-                                      },
+                                      : () => context.push('/edit-profile'),
                                 ),
                                 _buildActionButton(
                                   'Change Password',
                                   Icons.lock_outline,
                                   isLoading
                                       ? null
-                                      : () {
-                                        // TODO: Navigate to change password
-                                      },
+                                      : () => context.push('/change-password'),
                                 ),
                                 _buildActionButton(
                                   'Notifications',

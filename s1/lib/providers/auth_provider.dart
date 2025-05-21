@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user.dart';
+import '../providers/user_provider.dart';
 
 class AuthProvider with ChangeNotifier {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
@@ -110,6 +111,9 @@ class AuthProvider with ChangeNotifier {
           );
 
       if (userCredential.user != null) {
+        // Generate custom userID for student
+        final userProvider = UserProvider();
+        final userID = await userProvider.getNextUserID(UserRole.student);
         // Create user in Firestore
         final newUser = User(
           id: userCredential.user!.uid,
@@ -117,6 +121,7 @@ class AuthProvider with ChangeNotifier {
           email: email,
           role: UserRole.student, // Default role is student
           isActive: true,
+          userID: userID,
         );
 
         await _firestore
@@ -234,5 +239,68 @@ class AuthProvider with ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  // Update user profile
+  Future<bool> updateProfile(User updatedUser) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      // Update user in Firestore
+      await _firestore
+          .collection('users')
+          .doc(updatedUser.id)
+          .update(updatedUser.toFirestore());
+
+      // Update local user state
+      _user = updatedUser;
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Change password
+  Future<bool> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final user = _firebaseAuth.currentUser;
+      if (user == null) {
+        throw Exception('No user is currently signed in');
+      }
+
+      // Reauthenticate user before changing password
+      final credential = auth.EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      // Change password
+      await user.updatePassword(newPassword);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = _formatAuthError(e.toString());
+      notifyListeners();
+      return false;
+    }
   }
 }

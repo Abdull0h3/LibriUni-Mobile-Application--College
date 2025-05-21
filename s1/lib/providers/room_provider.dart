@@ -247,7 +247,7 @@ class RoomProvider with ChangeNotifier {
           // Filter by search query if provided
           if (_searchQuery.isNotEmpty) {
             final query = _searchQuery.toLowerCase();
-            return room.name.toLowerCase().contains(query);
+            return room.name.toLowerCase().startsWith(query);
           }
 
           return true;
