@@ -15,6 +15,7 @@ import 'providers/notification_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/borrow_provider.dart';
 import 'providers/room_booking_provider.dart';
+import 'providers/ai_chat_provider.dart';
 
 // Import services
 import 'services/book_service.dart';
@@ -24,7 +25,14 @@ import 'services/analytics_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    print('Error initializing Firebase: $e');
+    // Continue without Firebase for now
+  }
   runApp(const MyApp());
 }
 
@@ -42,8 +50,44 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => BorrowProvider()),
         ChangeNotifierProvider(create: (_) => RoomBookingProvider()),
+        ChangeNotifierProvider(create: (_) => AIChatProvider()),
       ],
-      child: LibriUniApp(),
+      child: MaterialApp(
+        home: Builder(
+          builder: (context) {
+            try {
+              return LibriUniApp();
+            } catch (e) {
+              return MaterialApp(
+                home: Scaffold(
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Error: $e'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Restart the app
+                            main();
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      ),
     );
   }
 }

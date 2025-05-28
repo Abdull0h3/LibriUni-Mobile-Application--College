@@ -256,7 +256,6 @@ class AuthProvider with ChangeNotifier {
 
       // Update local user state
       _user = updatedUser;
-
       _isLoading = false;
       notifyListeners();
       return true;

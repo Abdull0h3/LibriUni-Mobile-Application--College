@@ -13,6 +13,9 @@ import '../screens/student/book_detail_screen.dart';
 import '../screens/student/room_booking_screen.dart';
 import '../screens/student/borrowed_books_screen.dart';
 import '../screens/student/profile_screen.dart';
+import '../screens/student/notifications_screen.dart';
+import '../screens/student/my_reserved_rooms_screen.dart';
+import '../screens/student/ai_chat_screen.dart';
 import '../screens/staff/staff_dashboard_screen.dart';
 import '../screens/staff/catalog_screen.dart';
 import '../screens/staff/scan_qr_screen.dart';
@@ -32,11 +35,10 @@ import '../providers/room_provider.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
-  // ignore: unused_field
   static final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/login',
     navigatorKey: _rootNavigatorKey,
     redirect: (context, state) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -67,6 +69,8 @@ class AppRouter {
       return null;
     },
     routes: [
+      // Root route
+      GoRoute(path: '/', redirect: (context, state) => '/login'),
       // Auth routes
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
@@ -82,33 +86,53 @@ class AppRouter {
         builder: (context, state) => const ChangePasswordScreen(),
       ),
 
-      // Student routes /* */
-      GoRoute(
-        path: '/student',
-        builder: (context, state) => const StudentDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/student/books',
-        builder: (context, state) => const BookSearchScreen(),
-      ),
-      GoRoute(
-        path: '/student/books/:id',
-        builder: (context, state) {
-          final bookId = state.pathParameters['id']!;
-          return BookDetailScreen(bookId: bookId);
+      // Student routes with shell navigation
+      ShellRoute(
+        navigatorKey: _shellNavigatorKey,
+        builder: (context, state, child) {
+          return child;
         },
-      ),
-      GoRoute(
-        path: '/student/rooms',
-        builder: (context, state) => const RoomBookingScreen(),
-      ),
-      GoRoute(
-        path: '/student/borrowed',
-        builder: (context, state) => const BorrowedBooksScreen(),
-      ),
-      GoRoute(
-        path: '/student/profile',
-        builder: (context, state) => const ProfileScreen(),
+        routes: [
+          GoRoute(
+            path: '/student',
+            builder: (context, state) => const StudentDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/student/books',
+            builder: (context, state) => const BookSearchScreen(),
+          ),
+          GoRoute(
+            path: '/student/books/:id',
+            builder: (context, state) {
+              final bookId = state.pathParameters['id']!;
+              return BookDetailScreen(bookId: bookId);
+            },
+          ),
+          GoRoute(
+            path: '/student/rooms',
+            builder: (context, state) => const RoomBookingScreen(),
+          ),
+          GoRoute(
+            path: '/student/borrowed',
+            builder: (context, state) => const BorrowedBooksScreen(),
+          ),
+          GoRoute(
+            path: '/student/profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/student/notifications',
+            builder: (context, state) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: '/student/reserved-rooms',
+            builder: (context, state) => const MyReservedRoomsScreen(),
+          ),
+          GoRoute(
+            path: '/student/ai-chat',
+            builder: (context, state) => const AIChatScreen(),
+          ),
+        ],
       ),
 
       // Staff routes

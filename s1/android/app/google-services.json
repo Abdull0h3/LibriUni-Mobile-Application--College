@@ -1,33 +1,14 @@
 {
   "project_info": {
-    "project_number": "958799227985",
-    "firebase_url": "https://backend-demo-900a7-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "project_id": "backend-demo-900a7",
-    "storage_bucket": "backend-demo-900a7.firebasestorage.app"
+    "project_number": "917377388614",
+    "firebase_url": "https://mae-group26-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "mae-group26",
+    "storage_bucket": "mae-group26.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:958799227985:android:dafe028ca96c34861ddc70",
-        "android_client_info": {
-          "package_name": "com.example.backend_demo_app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDXNJ8cPDmxrKQV8IFTAi0B2tWlcQhQ1cY"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:958799227985:android:45a7d9fa7f68c7011ddc70",
+        "mobilesdk_app_id": "1:917377388614:android:b4d48210030da1ffa6ba47",
         "android_client_info": {
           "package_name": "com.example.s1"
         }
@@ -35,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDXNJ8cPDmxrKQV8IFTAi0B2tWlcQhQ1cY"
+          "current_key": "AIzaSyD7Hf1H88lW7WHA2QpA94o2mDVu9hbitHU"
         }
       ],
       "services": {

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/book.dart';
+import '../../widgets/student_nav_bar.dart';
 
 class BorrowedBooksScreen extends StatefulWidget {
   const BorrowedBooksScreen({Key? key}) : super(key: key);
@@ -205,22 +206,7 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
                   return _buildBorrowedBookItem(context, _borrowedBooks[index]);
                 },
               ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // Change this per screen
-        onTap: (index) {
-          if (index == 0) context.go('/student');
-          if (index == 1) context.go('/student/chat');
-          if (index == 2) context.go('/student/profile');
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
+      bottomNavigationBar: StudentNavBar(currentIndex: 0, context: context),
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/book_provider.dart';
 import '../../models/book.dart';
+import '../../widgets/student_nav_bar.dart';
 
 class BookSearchScreen extends StatefulWidget {
   const BookSearchScreen({super.key});
@@ -177,22 +178,7 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // Change this per screen
-        onTap: (index) {
-          if (index == 0) context.go('/student');
-          if (index == 1) context.go('/student/chat');
-          if (index == 2) context.go('/student/profile');
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
+      bottomNavigationBar: StudentNavBar(currentIndex: 0, context: context),
     );
   }
 

@@ -1,28 +1,29 @@
 import 'package:flutter/foundation.dart';
 import '../services/room_booking_service.dart';
 import '../models/room.dart';
+import '../models/room_booking.dart';
 
 class RoomBookingProvider with ChangeNotifier {
   final RoomBookingService _roomBookingService = RoomBookingService();
 
-  List<Map<String, dynamic>> _userBookings = [];
-  List<Map<String, dynamic>> _allBookings = [];
+  List<RoomBooking> _userBookings = [];
+  List<RoomBooking> _allBookings = [];
   bool _isLoading = false;
   String? _error;
 
   // Getters
-  List<Map<String, dynamic>> get userBookings => _userBookings;
-  List<Map<String, dynamic>> get allBookings => _allBookings;
+  List<RoomBooking> get userBookings => _userBookings;
+  List<RoomBooking> get allBookings => _allBookings;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // Fetch bookings for the current user
-  Future<void> fetchUserBookings() async {
+  // Fetch bookings for a specific user
+  Future<void> fetchUserBookings(String userId) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      _userBookings = await _roomBookingService.getUserBookings();
+      _userBookings = await _roomBookingService.getUserBookings(userId);
 
       _isLoading = false;
       notifyListeners();
@@ -56,6 +57,8 @@ class RoomBookingProvider with ChangeNotifier {
     DateTime startTime,
     DateTime endTime,
     String purpose,
+    String userId,
+    String userName,
   ) async {
     try {
       _isLoading = true;
@@ -67,10 +70,12 @@ class RoomBookingProvider with ChangeNotifier {
         startTime,
         endTime,
         purpose,
+        userId,
+        userName,
       );
 
       if (result) {
-        await fetchUserBookings(); // Refresh the user's bookings
+        await fetchUserBookings(userId); // Refresh the user's bookings
       } else {
         _error =
             'Failed to book room. It might be unavailable for the selected time.';
@@ -88,29 +93,35 @@ class RoomBookingProvider with ChangeNotifier {
   }
 
   // Cancel a booking
-  Future<bool> cancelBooking(String bookingId, String roomId) async {
+  Future<bool> cancelBooking(String bookingId) async {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      final result = await _roomBookingService.cancelBooking(bookingId, roomId);
+      final result = await _roomBookingService.cancelBooking(bookingId);
 
       if (result) {
         // Update the booking status in our lists
-        final userIndex = _userBookings.indexWhere(
-          (booking) => booking['id'] == bookingId,
-        );
-        if (userIndex != -1) {
-          _userBookings[userIndex]['status'] = 'cancelled';
-        }
+        _userBookings =
+            _userBookings
+                .map(
+                  (booking) =>
+                      booking.id == bookingId
+                          ? booking.copyWith(isCancelled: true)
+                          : booking,
+                )
+                .toList();
 
-        final allIndex = _allBookings.indexWhere(
-          (booking) => booking['id'] == bookingId,
-        );
-        if (allIndex != -1) {
-          _allBookings[allIndex]['status'] = 'cancelled';
-        }
+        _allBookings =
+            _allBookings
+                .map(
+                  (booking) =>
+                      booking.id == bookingId
+                          ? booking.copyWith(isCancelled: true)
+                          : booking,
+                )
+                .toList();
       } else {
         _error = 'Failed to cancel booking.';
       }

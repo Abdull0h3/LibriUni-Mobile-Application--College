@@ -13,6 +13,8 @@ class StudentDashboardScreen extends StatefulWidget {
 }
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
+  int _currentIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -26,6 +28,20 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         ).fetchNotifications(authProvider.user!.id);
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Update current index based on route
+    final String path = GoRouterState.of(context).fullPath ?? '/student';
+    if (path.startsWith('/student/ai-chat')) {
+      setState(() => _currentIndex = 1);
+    } else if (path.startsWith('/student/profile')) {
+      setState(() => _currentIndex = 2);
+    } else {
+      setState(() => _currentIndex = 0);
+    }
   }
 
   @override
@@ -45,29 +61,53 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             child: IconButton(
               icon: const Icon(Icons.notifications),
               onPressed: () {
-                // Navigate to notifications
+                context.push('/student/notifications');
               },
             ),
           ),
-          /*IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              context.push('/student/profile');
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () {
-              // Navigate to chat support
-            },
-          ),*/
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.secondary,
-            child: Text(
-              userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
-              style: const TextStyle(color: AppColors.white),
+          PopupMenuButton<String>(
+            icon: CircleAvatar(
+              radius: 16,
+              backgroundColor: AppColors.secondary,
+              child: Text(
+                userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
+                style: const TextStyle(color: AppColors.white),
+              ),
             ),
+            offset: const Offset(0, 40),
+            onSelected: (value) {
+              switch (value) {
+                case 'profile':
+                  context.push('/student/profile');
+                  break;
+                case 'logout':
+                  authProvider.signOut();
+                  break;
+              }
+            },
+            itemBuilder:
+                (context) => [
+                  const PopupMenuItem(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person_outline),
+                        SizedBox(width: 8),
+                        Text('Profile'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout),
+                        SizedBox(width: 8),
+                        Text('Logout'),
+                      ],
+                    ),
+                  ),
+                ],
           ),
           const SizedBox(width: 16),
         ],
@@ -114,9 +154,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   _buildDashboardCard(
                     icon: Icons.room,
                     title: 'My Reserved Rooms',
-                    onTap: () {
-                      // Navigate to reserved rooms
-                    },
+                    onTap: () => context.push('/student/reserved-rooms'),
                   ),
                 ],
               ),
@@ -137,42 +175,46 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           ],
         ),
       ),
-      // New bottomNAvigationBar
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // You can later make this dynamic if needed
-        onTap: (index) {
-          if (index == 0) return; // Already on Home
-          if (index == 1) context.push('/student/chat'); // Chat screen
-          if (index == 2) {
-            context.push('/student/profile'); // Settings/Profile screen
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() => _currentIndex = index);
+          switch (index) {
+            case 0:
+              if ((GoRouterState.of(context).fullPath ?? '/student') !=
+                  '/student') {
+                context.go('/student');
+              }
+              break;
+            case 1:
+              context.go('/student/ai-chat');
+              break;
+            case 2:
+              context.go('/student/profile');
+              break;
           }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            tooltip: 'Chat with Library Staff',
+            icon: Icon(Icons.support_agent_outlined),
+            selectedIcon: Icon(Icons.support_agent),
+            label: 'Staff Help',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings),
             label: 'Settings',
           ),
         ],
       ),
     );
   }
-  // Old bottomNavigationBar
-  /* bottomNavigationBar: BottomNavigationBar(
-  currentIndex: 0, // You can later make this dynamic if needed
-  onTap: (index) {
-    if (index == 0) return; // Already on Home
-    if (index == 1) context.push('/student/chat');     // Chat screen
-    if (index == 2) context.push('/student/profile');  // Settings/Profile screen
-  },
-  items: const [
-    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-    BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-    BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-  ],
-),
- */
 
   Widget _buildDashboardCard({
     required IconData icon,
@@ -208,30 +250,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     required Color color,
   }) {
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text('• $content', style: const TextStyle(fontSize: 14)),
-          ],
-        ),
+      child: ListTile(
+        leading: Icon(icon, color: color),
+        title: Text(title),
+        subtitle: Text(content),
+        trailing: const Icon(Icons.chevron_right),
       ),
     );
   }
