@@ -11,13 +11,50 @@ class RoomBookingProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  // Getters
+  Future<bool> reserveRoom({
+    required Room room,
+    required String userId,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final date = "${startTime.day}-${startTime.month}-${startTime.year}";
+
+      final success = await _roomBookingService.bookRoom(
+        room,
+        startTime,
+        endTime,
+        "General", // Replace with actual purpose if needed
+        userId,
+        date,
+      );
+
+      if (success) {
+        await fetchUserBookings(userId); // Update local state
+      } else {
+        _error =
+            'Room is already reserved or user already booked a room for that day.';
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _isLoading = false;
+      _error = 'Error reserving room: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
   List<RoomBooking> get userBookings => _userBookings;
   List<RoomBooking> get allBookings => _allBookings;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // Fetch bookings for a specific user
   Future<void> fetchUserBookings(String userId) async {
     try {
       _isLoading = true;
@@ -34,7 +71,6 @@ class RoomBookingProvider with ChangeNotifier {
     }
   }
 
-  // Fetch all bookings (for staff/admin)
   Future<void> fetchAllBookings({String? status}) async {
     try {
       _isLoading = true;
@@ -51,7 +87,6 @@ class RoomBookingProvider with ChangeNotifier {
     }
   }
 
-  // Book a room
   Future<bool> bookRoom(
     Room room,
     DateTime startTime,
@@ -92,7 +127,6 @@ class RoomBookingProvider with ChangeNotifier {
     }
   }
 
-  // Cancel a booking
   Future<bool> cancelBooking(String bookingId) async {
     try {
       _isLoading = true;
@@ -102,7 +136,6 @@ class RoomBookingProvider with ChangeNotifier {
       final result = await _roomBookingService.cancelBooking(bookingId);
 
       if (result) {
-        // Update the booking status in our lists
         _userBookings =
             _userBookings
                 .map(
@@ -137,7 +170,6 @@ class RoomBookingProvider with ChangeNotifier {
     }
   }
 
-  // Check room availability
   Future<bool> checkRoomAvailability(
     String roomId,
     DateTime startTime,
@@ -156,7 +188,6 @@ class RoomBookingProvider with ChangeNotifier {
     }
   }
 
-  // Clear error
   void clearError() {
     _error = null;
     notifyListeners();

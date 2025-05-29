@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/room.dart';
 
 /// Application theme using the defined color palette
 class AppTheme {
@@ -13,8 +15,6 @@ class AppTheme {
       onSecondary: AppColors.white,
       error: AppColors.error,
       onError: AppColors.white,
-      background: AppColors.background,
-      onBackground: AppColors.textPrimary,
       surface: AppColors.white,
       onSurface: AppColors.textPrimary,
     ),
@@ -64,7 +64,7 @@ class AppTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.white,
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -81,8 +81,6 @@ class AppTheme {
       onSecondary: AppColors.white,
       error: AppColors.error,
       onError: AppColors.white,
-      background: Color(0xFF121212),
-      onBackground: AppColors.white,
       surface: Color(0xFF1E1E1E),
       onSurface: AppColors.white,
     ),
@@ -132,10 +130,91 @@ class AppTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: const Color(0xFF1E1E1E),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
   );
+}
+
+class RoomBookingProvider extends ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  List<Room> availableRooms = [];
+  bool isLoading = false;
+  String? error;
+
+  // Fetch available rooms for a given date and time slot
+  Future<void> fetchAvailableRooms(
+    DateTime date,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      // 1. Fetch all rooms
+      final roomsSnapshot = await _firestore.collection('rooms').get();
+      final allRooms =
+          roomsSnapshot.docs.map((doc) => Room.fromFirestore(doc)).toList();
+
+      // 2. Fetch all reservations for the date
+      final reservationsSnapshot =
+          await _firestore
+              .collection('reservations')
+              .where(
+                'date',
+                isEqualTo: '${date.day}-${date.month}-${date.year}',
+              )
+              .get();
+
+      // 3. Filter out rooms that are reserved for the selected slot
+      final reservedRoomIds = <String>{};
+      for (var doc in reservationsSnapshot.docs) {
+        final data = doc.data();
+        final reservedStart = (data['startTime'] as Timestamp).toDate();
+        final reservedEnd = (data['endTime'] as Timestamp).toDate();
+        // Check for time overlap
+        if (startTime.isBefore(reservedEnd) && endTime.isAfter(reservedStart)) {
+          reservedRoomIds.add(data['roomID']);
+        }
+      }
+
+      availableRooms =
+          allRooms
+              .where((room) => !reservedRoomIds.contains(room.id!))
+              .toList();
+      error = null;
+    } catch (e) {
+      error = e.toString();
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  // Reserve a room
+  Future<bool> reserveRoom({
+    required String roomId,
+    required String userId,
+    required DateTime date,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    try {
+      await _firestore.collection('reservations').add({
+        'roomID': roomId,
+        'reservedBy': userId,
+        'date': '${date.day}-${date.month}-${date.year}',
+        'startTime': Timestamp.fromDate(startTime),
+        'endTime': Timestamp.fromDate(endTime),
+        'status': 'Confirmed',
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

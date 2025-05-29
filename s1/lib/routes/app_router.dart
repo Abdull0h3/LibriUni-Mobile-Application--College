@@ -29,9 +29,6 @@ import '../screens/admin/add_book_screen.dart';
 import '../screens/admin/add_user_screen.dart';
 import '../screens/admin/add_room_screen.dart';
 import '../screens/admin/admin_profile_screen.dart';
-import '../providers/book_provider.dart';
-import '../providers/user_provider.dart';
-import '../providers/room_provider.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();

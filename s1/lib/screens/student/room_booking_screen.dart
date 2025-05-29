@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:s1/providers/room_booking_provider.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/room_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/room.dart';
 import '../../widgets/student_nav_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RoomBookingScreen extends StatefulWidget {
-  const RoomBookingScreen({Key? key}) : super(key: key);
+  const RoomBookingScreen({super.key});
 
   @override
   State<RoomBookingScreen> createState() => _RoomBookingScreenState();
@@ -17,11 +19,6 @@ class RoomBookingScreen extends StatefulWidget {
 
 class _RoomBookingScreenState extends State<RoomBookingScreen> {
   DateTime _selectedDate = DateTime.now();
-  TimeOfDay _startTime = TimeOfDay.now();
-  TimeOfDay _endTime = TimeOfDay(
-    hour: TimeOfDay.now().hour + 1,
-    minute: TimeOfDay.now().minute,
-  );
 
   final List<String> _filters = ['All Rooms', 'Available', 'Occupied'];
   String _selectedFilter = 'All Rooms';
@@ -51,103 +48,6 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
     }
   }
 
-  Future<void> _selectStartTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _startTime,
-    );
-    if (picked != null && picked != _startTime) {
-      setState(() {
-        _startTime = picked;
-
-        // Ensure end time is after start time
-        if (_startTime.hour > _endTime.hour ||
-            (_startTime.hour == _endTime.hour &&
-                _startTime.minute >= _endTime.minute)) {
-          _endTime = TimeOfDay(
-            hour: _startTime.hour + 1,
-            minute: _startTime.minute,
-          );
-        }
-      });
-    }
-  }
-
-  Future<void> _selectEndTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _endTime,
-    );
-    if (picked != null && picked != _endTime) {
-      // Check if end time is after start time
-      if (picked.hour < _startTime.hour ||
-          (picked.hour == _startTime.hour &&
-              picked.minute <= _startTime.minute)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('End time must be after start time')),
-        );
-        return;
-      }
-
-      setState(() {
-        _endTime = picked;
-      });
-    }
-  }
-
-  Future<void> _bookRoom(Room room) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to book a room')),
-      );
-      return;
-    }
-
-    // Create DateTime objects for reservation start and end
-    final startDateTime = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      _startTime.hour,
-      _startTime.minute,
-    );
-
-    final endDateTime = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      _endTime.hour,
-      _endTime.minute,
-    );
-
-    final roomProvider = Provider.of<RoomProvider>(context, listen: false);
-    try {
-      final success = await roomProvider.reserveRoom(
-        room.id,
-        authProvider.user!.id,
-        startDateTime,
-        endDateTime,
-      );
-
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Room booked successfully')),
-        );
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(roomProvider.error ?? 'Failed to book room')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    }
-  }
-
   void _applyFilter(String filter) {
     setState(() {
       _selectedFilter = filter;
@@ -166,8 +66,7 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
   @override
   Widget build(BuildContext context) {
     final roomProvider = Provider.of<RoomProvider>(context);
-    final filteredRooms = _getFilteredRooms(roomProvider.rooms);
-
+    final rooms = roomProvider.rooms;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Room Booking'),
@@ -178,7 +77,7 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
       ),
       body: Column(
         children: [
-          // Date and time selection
+          // Date selection only
           Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -195,7 +94,7 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Select Date and Time',
+                  'Select Date',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
@@ -221,58 +120,6 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
                                 DateFormat(
                                   'MMM dd, yyyy',
                                 ).format(_selectedDate),
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _selectStartTime(context),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.access_time, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                _startTime.format(context),
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _selectEndTime(context),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.access_time, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                _endTime.format(context),
                                 style: const TextStyle(fontSize: 14),
                               ),
                             ],
@@ -323,22 +170,37 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
             child:
                 roomProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : filteredRooms.isEmpty
+                    : rooms.isEmpty
                     ? const Center(
                       child: Text(
                         'No rooms available for the selected criteria',
                         style: TextStyle(fontSize: 16),
                       ),
                     )
-                    : ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      itemCount: filteredRooms.length,
-                      itemBuilder: (context, index) {
-                        final room = filteredRooms[index];
-                        return _buildRoomItem(context, room);
+                    : FutureBuilder<List<Widget>>(
+                      future: _buildFilteredRoomWidgets(context, rooms),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final filteredRoomWidgets = snapshot.data!;
+                        if (filteredRoomWidgets.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'No rooms available for the selected criteria',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          );
+                        }
+                        return ListView(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          children: filteredRoomWidgets,
+                        );
                       },
                     ),
           ),
@@ -348,34 +210,301 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
     );
   }
 
-  Widget _buildRoomItem(BuildContext context, Room room) {
-    final statusColor = room.isReserved ? AppColors.error : AppColors.success;
-    final statusText = room.isReserved ? 'Occupied' : 'Available';
+  Future<List<Widget>> _buildFilteredRoomWidgets(
+    BuildContext context,
+    List<Room> rooms,
+  ) async {
+    final date = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    List<Widget> widgets = [];
+    for (final room in rooms) {
+      final slotsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('slots')
+              .doc(room.id)
+              .collection('slots')
+              .where(
+                'date',
+                isEqualTo: '${date.year}-${date.month}-${date.day}',
+              )
+              .get();
+      final docs = slotsSnapshot.docs;
+      bool allReserved =
+          docs.length == 10 &&
+          docs.every((doc) {
+            final data = doc.data() as Map<String, dynamic>?;
+            return (data?['isReserved'] ?? false) == true;
+          });
+      bool anyAvailable =
+          docs.length < 10 ||
+          docs.any((doc) {
+            final data = doc.data() as Map<String, dynamic>?;
+            return (data?['isReserved'] ?? false) == false;
+          });
+      if (_selectedFilter == 'Available' && !anyAvailable) continue;
+      if (_selectedFilter == 'Occupied' && !allReserved) continue;
+      widgets.add(_buildRoomItem(context, room));
+    }
+    return widgets;
+  }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12.0),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: statusColor.withOpacity(0.2),
-          child: Icon(Icons.meeting_room, color: statusColor),
-        ),
-        title: Text(room.name),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'ID: ' + room.id,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+  Widget _buildRoomItem(BuildContext context, Room room) {
+    final date = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    return FutureBuilder(
+      future:
+          FirebaseFirestore.instance
+              .collection('slots')
+              .doc(room.id)
+              .collection('slots')
+              .where(
+                'date',
+                isEqualTo: '${date.year}-${date.month}-${date.day}',
+              )
+              .get(),
+      builder: (context, snapshot) {
+        bool allReserved = false;
+        if (snapshot.hasData) {
+          final docs = (snapshot.data as QuerySnapshot).docs;
+          if (docs.length == 10 &&
+              docs.every((doc) {
+                final data = doc.data() as Map<String, dynamic>?;
+                return (data?['isReserved'] ?? false) == true;
+              })) {
+            allReserved = true;
+          }
+        }
+        final statusColor = allReserved ? AppColors.error : AppColors.success;
+        final statusText = allReserved ? 'Occupied' : 'Available';
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12.0),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: statusColor.withOpacity(0.2),
+              child: Icon(Icons.meeting_room, color: statusColor),
             ),
-            Text('Capacity: ${room.capacity}'),
-            if (room.location != null) Text('Location: ${room.location}'),
-          ],
-        ),
-        trailing: Text(statusText, style: TextStyle(color: statusColor)),
-        onTap: () {
-          // Room booking logic or details
-        },
-      ),
+            title: Text(room.name),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ID: ${room.id}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text('Capacity: ${room.capacity}'),
+                if (room.location != null) Text('Location: ${room.location}'),
+              ],
+            ),
+            trailing: Text(statusText, style: TextStyle(color: statusColor)),
+            onTap:
+                allReserved
+                    ? null
+                    : () async {
+                      final authProvider = Provider.of<AuthProvider>(
+                        context,
+                        listen: false,
+                      );
+                      if (authProvider.user == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please login to book a room'),
+                          ),
+                        );
+                        return;
+                      }
+                      final userId = authProvider.user!.id;
+                      final allRoomsSnapshot =
+                          await FirebaseFirestore.instance
+                              .collection('rooms')
+                              .get();
+                      int totalUserSlots = 0;
+                      for (var roomDoc in allRoomsSnapshot.docs) {
+                        final userSlotsSnapshot =
+                            await FirebaseFirestore.instance
+                                .collection('slots')
+                                .doc(roomDoc.id)
+                                .collection('slots')
+                                .where(
+                                  'date',
+                                  isEqualTo:
+                                      '${date.year}-${date.month}-${date.day}',
+                                )
+                                .where('reservedBy', isEqualTo: userId)
+                                .where('isReserved', isEqualTo: true)
+                                .get();
+                        totalUserSlots += userSlotsSnapshot.docs.length;
+                      }
+                      if (totalUserSlots >= 1) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'You can only reserve 1 slot per day.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+                      final slots = List.generate(10, (i) {
+                        final start = DateTime(
+                          date.year,
+                          date.month,
+                          date.day,
+                          8 + i,
+                          0,
+                        );
+                        final end = DateTime(
+                          date.year,
+                          date.month,
+                          date.day,
+                          9 + i,
+                          0,
+                        );
+                        return {
+                          'id':
+                              '${date.year}-${date.month}-${date.day}-${start.hour}',
+                          'startTime': start,
+                          'endTime': end,
+                          'isReserved': false,
+                          'reservedBy': null,
+                        };
+                      });
+                      final reservedSnapshot =
+                          await FirebaseFirestore.instance
+                              .collection('slots')
+                              .doc(room.id)
+                              .collection('slots')
+                              .where(
+                                'date',
+                                isEqualTo:
+                                    '${date.year}-${date.month}-${date.day}',
+                              )
+                              .get();
+                      for (var doc in reservedSnapshot.docs) {
+                        final data = doc.data();
+                        final slotId = doc.id;
+                        final index = slots.indexWhere(
+                          (s) => s['id'] == slotId,
+                        );
+                        if (index != -1) {
+                          slots[index]['isReserved'] =
+                              data['isReserved'] ?? false;
+                          slots[index]['reservedBy'] = data['reservedBy'];
+                          if (data['startTime'] != null) {
+                            slots[index]['startTime'] =
+                                (data['startTime'] as Timestamp).toDate();
+                          }
+                          if (data['endTime'] != null) {
+                            slots[index]['endTime'] =
+                                (data['endTime'] as Timestamp).toDate();
+                          }
+                        }
+                      }
+                      final selectedSlot = await showDialog<
+                        Map<String, dynamic>
+                      >(
+                        context: context,
+                        builder:
+                            (ctx) => AlertDialog(
+                              title: Text('Select a Slot'),
+                              content: SizedBox(
+                                width: double.maxFinite,
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: slots.length,
+                                  itemBuilder: (context, index) {
+                                    final slot = slots[index];
+                                    final reserved = slot['isReserved'] == true;
+                                    return ListTile(
+                                      title: Text(
+                                        '${TimeOfDay.fromDateTime(slot['startTime'] as DateTime).format(context)} - ${TimeOfDay.fromDateTime(slot['endTime'] as DateTime).format(context)}',
+                                      ),
+                                      subtitle:
+                                          reserved
+                                              ? Text(
+                                                'Occupied',
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              )
+                                              : Text(
+                                                'Available',
+                                                style: TextStyle(
+                                                  color: Colors.green,
+                                                ),
+                                              ),
+                                      enabled: !reserved,
+                                      onTap:
+                                          reserved
+                                              ? null
+                                              : () => Navigator.pop(ctx, slot),
+                                    );
+                                  },
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: Text('Cancel'),
+                                ),
+                              ],
+                            ),
+                      );
+                      if (selectedSlot == null) return;
+                      await FirebaseFirestore.instance
+                          .collection('slots')
+                          .doc(room.id)
+                          .collection('slots')
+                          .doc(selectedSlot['id'])
+                          .set({
+                            'startTime': selectedSlot['startTime'],
+                            'endTime': selectedSlot['endTime'],
+                            'isReserved': true,
+                            'reservedBy': userId,
+                            'date': '${date.year}-${date.month}-${date.day}',
+                          });
+                      final allSlotsSnapshot =
+                          await FirebaseFirestore.instance
+                              .collection('slots')
+                              .doc(room.id)
+                              .collection('slots')
+                              .where(
+                                'date',
+                                isEqualTo:
+                                    '${date.year}-${date.month}-${date.day}',
+                              )
+                              .get();
+                      final allReserved = allSlotsSnapshot.docs.every(
+                        (doc) => (doc.data()['isReserved'] ?? false) == true,
+                      );
+                      if (allReserved) {
+                        await FirebaseFirestore.instance
+                            .collection('rooms')
+                            .doc(room.id)
+                            .update({'status': 'occupied'});
+                      } else {
+                        await FirebaseFirestore.instance
+                            .collection('rooms')
+                            .doc(room.id)
+                            .update({'status': 'available'});
+                      }
+                      final roomProvider = Provider.of<RoomProvider>(
+                        context,
+                        listen: false,
+                      );
+                      await roomProvider.fetchRooms();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Room booked successfully')),
+                      );
+                    },
+          ),
+        );
+      },
     );
   }
 }

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/room_booking_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/room_booking.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/error_widget.dart';
 import '../../widgets/student_nav_bar.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyReservedRoomsScreen extends StatefulWidget {
   const MyReservedRoomsScreen({super.key});
@@ -37,193 +37,191 @@ class _MyReservedRoomsScreenState extends State<MyReservedRoomsScreen> {
     } else if (path.startsWith('/student/profile')) {
       currentIndex = 2;
     }
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.user?.id;
     return Scaffold(
       appBar: AppBar(title: const Text('My Reserved Rooms')),
-      body: Consumer<RoomBookingProvider>(
-        builder: (context, bookingProvider, child) {
-          if (bookingProvider.isLoading) {
-            return const LoadingIndicator();
-          }
-
-          if (bookingProvider.error != null) {
-            return CustomErrorWidget(
-              error: bookingProvider.error!,
-              onRetry: () {
-                final userId = context.read<AuthProvider>().user?.id;
-                if (userId != null) {
-                  bookingProvider.fetchUserBookings(userId);
-                }
-              },
-            );
-          }
-
-          final bookings = bookingProvider.userBookings;
-
-          if (bookings.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.meeting_room_outlined,
-                    size: 64,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No room reservations yet',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Book a room to study or collaborate',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Navigate to room booking screen
-                      Navigator.pushNamed(context, '/student/room-booking');
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Book a Room'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: bookings.length,
-            itemBuilder: (context, index) {
-              final booking = bookings[index];
-              final isUpcoming = booking.startTime.isAfter(DateTime.now());
-              final isOngoing =
-                  booking.startTime.isBefore(DateTime.now()) &&
-                  booking.endTime.isAfter(DateTime.now());
-
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+      body:
+          userId == null
+              ? const Center(
+                child: Text('Please login to view your reservations'),
+              )
+              : FutureBuilder<List<Map<String, dynamic>>>(
+                future: _fetchUserReservedSlots(userId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const LoadingIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return CustomErrorWidget(
+                      error: snapshot.error.toString(),
+                      onRetry: () => setState(() {}),
+                    );
+                  }
+                  final bookings = snapshot.data ?? [];
+                  if (bookings.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  booking.roomName,
-                                  style: Theme.of(context).textTheme.titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Capacity: ${booking.roomCapacity} people',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                              ],
-                            ),
+                          Icon(
+                            Icons.meeting_room_outlined,
+                            size: 64,
+                            color: AppColors.textSecondary,
                           ),
-                          _buildStatusChip(context, isUpcoming, isOngoing),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoRow(
-                              context,
-                              Icons.calendar_today_outlined,
-                              _formatDate(booking.startTime),
-                            ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No room reservations yet',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(color: AppColors.textSecondary),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildInfoRow(
-                              context,
-                              Icons.access_time_outlined,
-                              '${_formatTime(booking.startTime)} - ${_formatTime(booking.endTime)}',
-                            ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Book a room to study or collaborate',
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
                       ),
-                      if (booking.purpose != null) ...[
-                        const SizedBox(height: 16),
-                        _buildInfoRow(
-                          context,
-                          Icons.description_outlined,
-                          booking.purpose!,
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      if (isUpcoming)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton.icon(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder:
-                                      (context) => AlertDialog(
-                                        title: const Text('Cancel Reservation'),
-                                        content: const Text(
-                                          'Are you sure you want to cancel this room reservation?',
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: bookings.length,
+                    itemBuilder: (context, index) {
+                      final booking = bookings[index];
+                      final startTime = booking['startTime'] as DateTime;
+                      final canCancel = startTime.isAfter(
+                        DateTime.now().add(const Duration(hours: 1)),
+                      );
+                      return Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          booking['roomName'] ?? '',
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.titleLarge?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed:
-                                                () => Navigator.pop(
-                                                  context,
-                                                  false,
-                                                ),
-                                            child: const Text('No'),
-                                          ),
-                                          TextButton(
-                                            onPressed:
-                                                () => Navigator.pop(
-                                                  context,
-                                                  true,
-                                                ),
-                                            child: const Text('Yes'),
-                                          ),
-                                        ],
-                                      ),
-                                ).then((shouldCancel) {
-                                  if (shouldCancel == true) {
-                                    bookingProvider.cancelBooking(booking.id);
-                                  }
-                                });
-                              },
-                              icon: const Icon(Icons.cancel_outlined),
-                              label: const Text('Cancel'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppColors.error,
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Capacity: ${booking['roomCapacity'] ?? ''} people',
+                                          style:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyMedium,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 16),
+                              const Divider(),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildInfoRow(
+                                      context,
+                                      Icons.calendar_today_outlined,
+                                      _formatDate(startTime),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: _buildInfoRow(
+                                      context,
+                                      Icons.access_time_outlined,
+                                      '${_formatTime(startTime)} - ${_formatTime(booking['endTime'] as DateTime)}',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              if (canCancel)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton.icon(
+                                      onPressed: () async {
+                                        await FirebaseFirestore.instance
+                                            .collection('slots')
+                                            .doc(booking['roomId'])
+                                            .collection('slots')
+                                            .doc(booking['slotId'])
+                                            .update({
+                                              'isReserved': false,
+                                              'reservedBy': null,
+                                            });
+                                        setState(() {});
+                                      },
+                                      icon: const Icon(Icons.cancel_outlined),
+                                      label: const Text('Cancel'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppColors.error,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
                         ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
+                      );
+                    },
+                  );
+                },
+              ),
       bottomNavigationBar: StudentNavBar(
         currentIndex: currentIndex,
         context: context,
       ),
     );
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchUserReservedSlots(
+    String userId,
+  ) async {
+    final roomsSnapshot =
+        await FirebaseFirestore.instance.collection('rooms').get();
+    List<Map<String, dynamic>> reserved = [];
+    for (final roomDoc in roomsSnapshot.docs) {
+      final slotsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('slots')
+              .doc(roomDoc.id)
+              .collection('slots')
+              .where('reservedBy', isEqualTo: userId)
+              .where('isReserved', isEqualTo: true)
+              .get();
+      for (final slotDoc in slotsSnapshot.docs) {
+        final data = slotDoc.data();
+        reserved.add({
+          'roomId': roomDoc.id,
+          'roomName': roomDoc.data()['name'],
+          'roomCapacity': roomDoc.data()['capacity'],
+          'startTime': (data['startTime'] as Timestamp).toDate(),
+          'endTime': (data['endTime'] as Timestamp).toDate(),
+          'slotId': slotDoc.id,
+        });
+      }
+    }
+    reserved.sort(
+      (a, b) =>
+          (a['startTime'] as DateTime).compareTo(b['startTime'] as DateTime),
+    );
+    return reserved;
   }
 
   Widget _buildStatusChip(

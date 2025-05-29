@@ -54,18 +54,37 @@ class RoomBookingService {
     String userName,
   ) async {
     try {
-      // Check if room is available
+      final date = '${startTime.day}-${startTime.month}-${startTime.year}';
+      final userBookingQuery =
+          await _firestore
+              .collection('reservations')
+              .where('reservedBy', isEqualTo: userId)
+              .where('date', isEqualTo: date)
+              .where('status', isEqualTo: 'Confirmed')
+              .get();
+      if (userBookingQuery.docs.length >= 2) {
+        throw Exception('You can only reserve up to 2 rooms per day.');
+      }
+      int overlappingCount = 0;
+      for (var doc in userBookingQuery.docs) {
+        final res = RoomBooking.fromFirestore(doc);
+        if (res.startTime.isBefore(endTime) && res.endTime.isAfter(startTime)) {
+          overlappingCount++;
+        }
+      }
+      if (overlappingCount >= 2) {
+        throw Exception(
+          'You can only reserve up to 2 rooms per day in different time slots.',
+        );
+      }
       final bool isAvailable = await checkRoomAvailability(
         room.id,
         startTime,
         endTime,
       );
-
       if (!isAvailable) {
         return false;
       }
-
-      // Create booking
       final booking = RoomBooking(
         id: '',
         userId: userId,
@@ -76,9 +95,7 @@ class RoomBookingService {
         endTime: endTime,
         purpose: purpose,
       );
-
-      await _firestore.collection(_collection).add(booking.toFirestore());
-
+      await _firestore.collection('reservations').add(booking.toFirestore());
       return true;
     } catch (e) {
       throw Exception('Failed to book room: ${e.toString()}');
