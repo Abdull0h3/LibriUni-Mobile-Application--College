@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/user_provider.dart';
-import '../../models/user.dart';
+import '../../models/user_model.dart';
 
 class AddUserScreen extends StatefulWidget {
   final User? user; // Pass user for editing, null for adding
@@ -106,8 +106,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
             context.pop();
           }
         } else {
-          // Update existing user
-          success = await userProvider.updateUser(user);
+          // Update existing user, pass password if not empty
+          success = await userProvider.updateUser(
+            user,
+            password: password.isNotEmpty ? password : null,
+          );
           if (success && mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('User updated successfully')),
@@ -280,26 +283,28 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   ),
                   const SizedBox(height: 16),
                   // Password
-                  TextFormField(
-                    controller: _passwordController,
-                    enabled: !_isLoading,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'Enter password',
-                      prefixIcon: Icon(Icons.lock),
+                  if (_user == null) ...[
+                    TextFormField(
+                      controller: _passwordController,
+                      enabled: !_isLoading,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        hintText: 'Enter password',
+                        prefixIcon: Icon(Icons.lock),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a password';
+                        }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
+                  ],
                   // Submit button
                   ElevatedButton(
                     onPressed: _isLoading ? null : _saveUser,

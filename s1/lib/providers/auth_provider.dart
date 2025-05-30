@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user.dart';
+import '../models/user_model.dart';
 import '../providers/user_provider.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -223,6 +223,10 @@ class AuthProvider with ChangeNotifier {
       return 'No user found with this email.';
     } else if (errorMessage.contains('wrong-password')) {
       return 'Incorrect password.';
+    } else if (errorMessage.contains('invalid-credential')) {
+      return 'Incorrect email or password. Please try again.';
+    } else if (errorMessage.contains('User data not found')) {
+      return 'Your account has been deleted. Please contact the administrator.';
     } else if (errorMessage.contains('email-already-in-use')) {
       return 'This email is already registered.';
     } else if (errorMessage.contains('network-request-failed')) {
@@ -232,7 +236,7 @@ class AuthProvider with ChangeNotifier {
     } else if (errorMessage.contains('timed out')) {
       return errorMessage;
     }
-    return errorMessage;
+    return 'Login failed. Please check your credentials and try again.';
   }
 
   // Clear error
@@ -300,6 +304,17 @@ class AuthProvider with ChangeNotifier {
       _error = _formatAuthError(e.toString());
       notifyListeners();
       return false;
+    }
+  }
+
+  // Send password reset email
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      throw Exception(
+        'Failed to send password reset email: ${_formatAuthError(e.toString())}',
+      );
     }
   }
 }

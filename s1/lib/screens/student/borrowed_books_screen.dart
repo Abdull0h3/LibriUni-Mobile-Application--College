@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/book.dart';
+import '../../models/book_model.dart';
 import '../../widgets/student_nav_bar.dart';
 
 class BorrowedBooksScreen extends StatefulWidget {
@@ -22,36 +22,20 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
   // Here we'll just use a mock list for demonstration
   final List<BorrowedBook> _borrowedBooks = [
     BorrowedBook(
-      book: Book(
+      book: BookModel(
         id: '1',
         title: 'Data Science 101',
         author: 'John Smith',
         category: 'Engineering',
-        shelf: 'A1',
-        isAvailable: false,
-        publishedDate: DateTime(2021),
+        code: "D093",
+        status: "Borrowed",
+        publishedYear: 2021,
         coverUrl: null,
         description: 'An introduction to data science principles and methods.',
       ),
       borrowDate: DateTime.now().subtract(const Duration(days: 5)),
       dueDate: DateTime.now().add(const Duration(days: 9)),
       isOverdue: false,
-    ),
-    BorrowedBook(
-      book: Book(
-        id: '2',
-        title: 'AI Fundamentals',
-        author: 'Sarah Johnson',
-        category: 'Engineering',
-        shelf: 'B3',
-        isAvailable: false,
-        publishedDate: DateTime(2020),
-        coverUrl: null,
-        description: 'Comprehensive guide to artificial intelligence.',
-      ),
-      borrowDate: DateTime.now().subtract(const Duration(days: 15)),
-      dueDate: DateTime.now().subtract(const Duration(days: 1)),
-      isOverdue: true,
     ),
   ];
 
@@ -390,7 +374,7 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
 
 // Model class for borrowed books
 class BorrowedBook {
-  final Book book;
+  final BookModel book;
   final DateTime borrowDate;
   final DateTime dueDate;
   final bool isOverdue;

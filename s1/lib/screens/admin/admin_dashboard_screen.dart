@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/book_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/room_provider.dart';
+import '../../providers/book_provider.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
-  const AdminDashboardScreen({Key? key}) : super(key: key);
+  const AdminDashboardScreen({super.key});
 
   @override
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
@@ -45,7 +45,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       setState(() {
         _totalBooks = bookProvider.books.length;
         _availableBooks =
-            bookProvider.books.where((book) => book.isAvailable).length;
+            bookProvider.books
+                .where((book) => book.status == 'Available')
+                .length;
         _totalUsers = userProvider.users.length;
         _totalRooms = roomProvider.rooms.length;
         _isLoading = false;

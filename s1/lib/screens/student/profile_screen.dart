@@ -84,6 +84,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = authProvider.user;
     final isLoading = _isLoading || authProvider.isLoading;
 
+    Future<void> _navigateToEditProfile() async {
+      await Navigator.of(context).pushNamed('/edit-profile');
+      // Refresh user data after returning from edit profile
+      if (user != null) {
+        await authProvider.initializeUser();
+      }
+    }
+
     return Stack(
       children: [
         Scaffold(
@@ -116,7 +124,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ? ClipRRect(
                                     borderRadius: BorderRadius.circular(50),
                                     child: Image.network(
-                                      user.profilePictureUrl!,
+                                      user.profilePictureUrl! +
+                                          '?v=${DateTime.now().millisecondsSinceEpoch}',
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.cover,
@@ -198,12 +207,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                _buildActionButton(
-                                  'Edit Profile',
-                                  Icons.edit,
-                                  isLoading
-                                      ? null
-                                      : () => context.push('/edit-profile'),
+                                ListTile(
+                                  leading: const Icon(Icons.edit),
+                                  title: const Text('Edit Profile'),
+                                  onTap:
+                                      isLoading ? null : _navigateToEditProfile,
                                 ),
                                 _buildActionButton(
                                   'Change Password',

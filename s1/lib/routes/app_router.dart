@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
@@ -16,19 +15,26 @@ import '../screens/student/profile_screen.dart';
 import '../screens/student/notifications_screen.dart';
 import '../screens/student/my_reserved_rooms_screen.dart';
 import '../screens/student/ai_chat_screen.dart';
-import '../screens/staff/staff_dashboard_screen.dart';
-import '../screens/staff/catalog_screen.dart';
-import '../screens/staff/scan_qr_screen.dart';
-import '../screens/staff/user_view_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
-import '../screens/admin/manage_books_screen.dart';
 import '../screens/admin/manage_users_screen.dart';
 import '../screens/admin/manage_rooms_screen.dart';
 import '../screens/admin/analytics_screen.dart';
-import '../screens/admin/add_book_screen.dart';
 import '../screens/admin/add_user_screen.dart';
 import '../screens/admin/add_room_screen.dart';
 import '../screens/admin/admin_profile_screen.dart';
+import '/models/book_model.dart';
+import '/screens/staff/staff_dashboard_screen.dart';
+import '/screens/staff/search_catalog_screen.dart';
+import '/screens/staff/manage_books_screen.dart';
+import '/screens/staff/add_edit_book_screen.dart';
+import '/screens/staff/view_users_screen.dart';
+import '/screens/staff/news_item_detail_screen.dart';
+import '/models/news_item_model.dart';
+import '/screens/staff/news_and_events_screen.dart';
+import '/screens/staff/scan_qr_screen.dart';
+import '/screens/staff/borrowed_items_screen.dart';
+import '/screens/staff/manage_fines_screen.dart';
+import '/screens/staff/loan_form_screen.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -68,6 +74,7 @@ class AppRouter {
     routes: [
       // Root route
       GoRoute(path: '/', redirect: (context, state) => '/login'),
+
       // Auth routes
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
@@ -81,6 +88,65 @@ class AppRouter {
       GoRoute(
         path: '/change-password',
         builder: (context, state) => const ChangePasswordScreen(),
+      ),
+
+      // Staff routes
+      GoRoute(
+        path: '/staff',
+        builder: (context, state) => const StaffDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/staff/search-catalog',
+        builder: (context, state) => const SearchCatalogScreen(),
+      ),
+      GoRoute(
+        path: '/staff/view-users',
+        builder: (context, state) => const ViewUsersScreen(),
+      ),
+      GoRoute(
+        path: '/staff/borrowed-items',
+        builder: (context, state) => const BorrowedItemsScreen(),
+      ),
+      GoRoute(
+        path: '/staff/manage-books',
+        builder: (context, state) => const ManageBooksScreen(),
+      ),
+      GoRoute(
+        path: '/staff/manage-fines',
+        builder: (context, state) => const ManageFinesScreen(),
+      ),
+      GoRoute(
+        path: '/staff/scan-qr',
+        builder: (context, state) => const ScanQrScreen(),
+      ),
+      GoRoute(
+        path: '/staff/news-events',
+        builder: (context, state) => const NewsAndEventsScreen(),
+      ),
+      GoRoute(
+        path: '/staff/news/:id',
+        builder: (context, state) {
+          final newsItem = state.extra as NewsItemModel;
+          return NewsItemDetailScreen(newsItem: newsItem);
+        },
+      ),
+      GoRoute(
+        path: '/staff/books/add',
+        builder: (context, state) => const AddEditBookScreen(),
+      ),
+      GoRoute(
+        path: '/staff/books/edit/:id',
+        builder: (context, state) {
+          final book = state.extra as BookModel;
+          return AddEditBookScreen(bookToEdit: book);
+        },
+      ),
+      GoRoute(
+        path: '/staff/loan-form',
+        builder: (context, state) {
+          final book = state.extra as BookModel;
+          return LoanFormScreen(book: book);
+        },
       ),
 
       // Student routes with shell navigation
@@ -132,24 +198,6 @@ class AppRouter {
         ],
       ),
 
-      // Staff routes
-      GoRoute(
-        path: '/staff',
-        builder: (context, state) => const StaffDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/staff/catalog',
-        builder: (context, state) => const CatalogScreen(),
-      ),
-      GoRoute(
-        path: '/staff/scan',
-        builder: (context, state) => const ScanQRScreen(),
-      ),
-      GoRoute(
-        path: '/staff/users',
-        builder: (context, state) => const UserViewScreen(),
-      ),
-
       // Admin routes
       GoRoute(
         path: '/admin',
@@ -179,7 +227,11 @@ class AppRouter {
       // Admin add/edit routes
       GoRoute(
         path: '/admin/books/add',
-        builder: (context, state) => const AddBookScreen(),
+        builder: (context, state) {
+          final bookToEdit =
+              state.extra is BookModel ? state.extra as BookModel : null;
+          return AddEditBookScreen(bookToEdit: bookToEdit);
+        },
       ),
       GoRoute(
         path: '/admin/users/add',

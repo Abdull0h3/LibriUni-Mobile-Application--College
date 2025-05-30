@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/book_provider.dart';
-import '../../models/book.dart';
+import '../../models/book_model.dart';
 
 class ManageBooksScreen extends StatefulWidget {
-  const ManageBooksScreen({Key? key}) : super(key: key);
+  const ManageBooksScreen({super.key});
 
   @override
   State<ManageBooksScreen> createState() => _ManageBooksScreenState();
@@ -68,13 +68,13 @@ class _ManageBooksScreenState extends State<ManageBooksScreen> {
     context.push('/admin/books/add');
   }
 
-  void _editBook(Book book) {
+  void _editBook(BookModel book) {
     // Navigate to add book screen with book parameter
     // This screen handles both adding and editing books
     context.push('/admin/books/add', extra: book);
   }
 
-  void _deleteBook(Book book) {
+  void _deleteBook(BookModel book) {
     showDialog(
       context: context,
       builder:
@@ -229,7 +229,7 @@ class _ManageBooksScreenState extends State<ManageBooksScreen> {
                             ),
                             title: Text(book.title),
                             subtitle: Text(
-                              '${book.author} • ${book.category} • ${book.isAvailable ? 'Available' : 'Borrowed'}',
+                              '${book.author} • ${book.category} • ${book.status}',
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,

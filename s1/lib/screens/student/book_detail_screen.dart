@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../models/book_model.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/book_provider.dart';
-import '../../models/book.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/student_nav_bar.dart';
 
@@ -17,7 +17,7 @@ class BookDetailScreen extends StatefulWidget {
 }
 
 class _BookDetailScreenState extends State<BookDetailScreen> {
-  Book? _book;
+  BookModel? _book;
   bool _isLoading = true;
   String? _error;
 
@@ -54,21 +54,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         _isLoading = false;
       });
     }
-  }
-
-  Future<void> _borrowBook() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to borrow a book')),
-      );
-      return;
-    }
-
-    // In a real app, we would call a service to handle the borrowing process
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Book borrowed successfully')));
   }
 
   @override
@@ -192,35 +177,39 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color:
-                                      _book!.isAvailable
+                                      _book!.status == 'Available'
                                           ? AppColors.success.withOpacity(0.2)
-                                          : AppColors.error.withOpacity(0.2),
+                                          : _book!.status == 'Borrowed'
+                                          ? AppColors.error.withOpacity(0.2)
+                                          : AppColors.warning.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  _book!.isAvailable ? 'Available' : 'On Loan',
+                                  _book!.status,
                                   style: TextStyle(
                                     color:
-                                        _book!.isAvailable
+                                        _book!.status == 'Available'
                                             ? AppColors.success
-                                            : AppColors.error,
+                                            : _book!.status == 'Borrowed'
+                                            ? AppColors.error
+                                            : AppColors.warning,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Category: ${_book!.category}',
+                                'Category: ${_book!.category ?? 'Not specified'}',
                                 style: const TextStyle(fontSize: 14),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Shelf: ${_book!.shelf}',
+                                'Code: ${_book!.code}',
                                 style: const TextStyle(fontSize: 14),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Published: ${DateFormat('MMMM yyyy').format(_book!.publishedDate)}',
+                                'Published: ${_book!.publishedYear ?? 'Not specified'}',
                                 style: const TextStyle(fontSize: 14),
                               ),
                             ],
@@ -242,25 +231,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       _book!.description ??
                           'No description available for this book.',
                       style: const TextStyle(fontSize: 14, height: 1.5),
-                    ),
-                    const SizedBox(height: 32),
-                    // Borrow button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _book!.isAvailable ? _borrowBook : null,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor:
-                              _book!.isAvailable
-                                  ? AppColors.primary
-                                  : AppColors.disabledBackground,
-                        ),
-                        child: Text(
-                          _book!.isAvailable ? 'Borrow Book' : 'Not Available',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
                     ),
                   ],
                 ),

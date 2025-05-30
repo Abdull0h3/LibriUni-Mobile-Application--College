@@ -6,7 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/user.dart';
+import '../../models/user_model.dart';
 import 'package:flutter/services.dart';
 
 class EditProfileScreen extends StatefulWidget {

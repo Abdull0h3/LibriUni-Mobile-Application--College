@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/book_provider.dart';
-import '../../models/book.dart';
+import '../../models/book_model.dart';
 import '../../widgets/student_nav_bar.dart';
 
 class BookSearchScreen extends StatefulWidget {
@@ -182,7 +182,7 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
     );
   }
 
-  Widget _buildBookItem(BuildContext context, Book book) {
+  Widget _buildBookItem(BuildContext context, BookModel book) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12.0),
       child: ListTile(
@@ -217,7 +217,7 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
           children: [
             const SizedBox(height: 4),
             Text(
-              'ID: ' + book.id,
+              'Code: ${book.code}',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
             Text(book.author, style: const TextStyle(fontSize: 14)),
@@ -226,15 +226,22 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color:
-                    book.isAvailable
+                    book.status == 'Available'
                         ? AppColors.success.withOpacity(0.2)
-                        : AppColors.error.withOpacity(0.2),
+                        : book.status == 'Borrowed'
+                        ? AppColors.error.withOpacity(0.2)
+                        : AppColors.warning.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                book.isAvailable ? 'Available' : 'On Loan',
+                book.status,
                 style: TextStyle(
-                  color: book.isAvailable ? AppColors.success : AppColors.error,
+                  color:
+                      book.status == 'Available'
+                          ? AppColors.success
+                          : book.status == 'Borrowed'
+                          ? AppColors.error
+                          : AppColors.warning,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),

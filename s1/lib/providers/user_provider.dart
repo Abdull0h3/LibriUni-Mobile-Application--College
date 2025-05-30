@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user.dart';
+import '../models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'dart:math';
 
@@ -149,7 +149,7 @@ class UserProvider with ChangeNotifier {
   }
 
   // Update a user
-  Future<bool> updateUser(User user) async {
+  Future<bool> updateUser(User user, {String? password}) async {
     try {
       _isLoading = true;
       notifyListeners();
@@ -158,6 +158,24 @@ class UserProvider with ChangeNotifier {
           .collection(_collection)
           .doc(user.id)
           .update(user.toFirestore());
+
+      // If password is provided, update it in Firebase Auth
+      if (password != null && password.isNotEmpty) {
+        final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
+        final userRecord =
+            await _firestore.collection(_collection).doc(user.id).get();
+        final userEmail = userRecord['email'];
+        // Re-authenticate as admin using admin credentials (not possible directly in client SDK)
+        // Instead, send a password reset email or use a Cloud Function for admin password reset in production
+        // For demo, try to update password if the user is currently signed in
+        final currentUser = _firebaseAuth.currentUser;
+        if (currentUser != null && currentUser.uid == user.id) {
+          await currentUser.updatePassword(password);
+        } else {
+          // If not the current user, send a password reset email
+          await _firebaseAuth.sendPasswordResetEmail(email: userEmail);
+        }
+      }
 
       final index = _users.indexWhere((u) => u.id == user.id);
       if (index != -1) {

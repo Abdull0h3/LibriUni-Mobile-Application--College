@@ -1,184 +1,74 @@
+// lib/screens/staff_dashboard_screen.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../constants/app_colors.dart';
-import '../../providers/auth_provider.dart';
+import '/constants/app_colors.dart';
 
-class StaffDashboardScreen extends StatefulWidget {
-  const StaffDashboardScreen({Key? key}) : super(key: key);
+class StaffDashboardScreen extends StatelessWidget {
+  const StaffDashboardScreen({super.key});
 
-  @override
-  State<StaffDashboardScreen> createState() => _StaffDashboardScreenState();
-}
-
-class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.user;
+    // Define the dashboard items
+    final List<DashboardItem> dashboardItems = [
+      DashboardItem(
+        icon: Icons.menu_book,
+        title: 'Search Catalog',
+        onTap: () => context.push('/staff/search-catalog'),
+      ),
+      DashboardItem(
+        icon: Icons.people,
+        title: 'View Users',
+        onTap: () => context.push('/staff/view-users'),
+      ),
+      DashboardItem(
+        icon: Icons.collections_bookmark,
+        title: 'Borrowed Items',
+        onTap: () => context.push('/staff/borrowed-items'),
+      ),
+      DashboardItem(
+        icon: Icons.event_available,
+        title: 'Reserved Rooms',
+        onTap: () => context.push('/staff/reserved-rooms'),
+      ),
+      // Added Manage Books to the dashboard for direct access as per its wireframe being prominent
+      DashboardItem(
+        icon: Icons.rule_folder_outlined,
+        title: 'Manage Books',
+        onTap: () => context.push('/staff/manage-books'),
+      ),
+      DashboardItem(
+        icon: Icons.attach_money,
+        title: 'Manage Fines',
+        onTap: () => context.push('/staff/manage-fines'),
+      ),
+      DashboardItem(
+        icon: Icons.qr_code_scanner,
+        title: 'Scan QR / Check-In',
+        onTap: () => context.push('/staff/scan-qr'),
+      ), // Scan QR can handle check-ins
+      DashboardItem(
+        icon: Icons.campaign,
+        title: 'News & Events',
+        onTap: () => context.push('/staff/news-events'),
+      ),
+      // DashboardItem(icon: Icons.assignment_return, title: 'Checked-In Returns', onTap: () => Navigator.pushNamed(context, AppRoutes.checkedInReturns)),
+    ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Staff Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => context.push('/staff/profile'),
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        title: Row(
           children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: AppColors.primary),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 30,
-                    child: Icon(
-                      Icons.person,
-                      size: 30,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    user?.name ?? 'Staff',
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Text(
-                    user?.email ?? '',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
-              selected: true,
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.library_books),
-              title: const Text('Book Catalog'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/staff/catalog');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.qr_code_scanner),
-              title: const Text('Scan QR Code'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/staff/scan');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Users'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/staff/users');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                authProvider.signOut();
-                context.go('/login');
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Welcome back!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            // Quick Actions
-            const Text(
-              'Quick Actions',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildQuickActionCard(
-                    'Issue Book',
-                    Icons.book,
-                    AppColors.primary,
-                    () => context.push('/staff/scan'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildQuickActionCard(
-                    'Return Book',
-                    Icons.assignment_return,
-                    AppColors.secondary,
-                    () => context.push('/staff/scan'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildQuickActionCard(
-                    'View Users',
-                    Icons.people,
-                    AppColors.success,
-                    () => context.push('/staff/users'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            // Recent Activities
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Recent Activities',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                TextButton(onPressed: () {}, child: const Text('View All')),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8.0),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: AppColors.primary.withOpacity(0.2),
-                        child: const Icon(Icons.book, color: AppColors.primary),
-                      ),
-                      title: Text('Action ${index + 1}'),
-                      subtitle: Text('Details for action ${index + 1}'),
-                      trailing: Text(
-                        '${DateTime.now().hour}:${DateTime.now().minute}',
-                        style: const TextStyle(color: AppColors.textSecondary),
-                      ),
+            SizedBox(
+              height: 35,
+              child: Image.asset(
+                AppConstants.libriUniLogoPath, // Using from app_colors.dart
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Text(
+                    'LibriUni',
+                    style: TextStyle(
+                      color: AppColors.textColorLight,
+                      fontWeight: FontWeight.bold,
                     ),
                   );
                 },
@@ -186,36 +76,137 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle, size: 30),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('User Profile'),
+                      content: const Text(
+                        'Welcome, Staff Member! \n(Profile page coming soon)',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search books, users, or rooms...',
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: AppColors.primaryColor,
+                ),
+                filled: true,
+                fillColor: AppColors.cardBackgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: const BorderSide(
+                    color: AppColors.secondaryColor,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 15.0),
+              ),
+              onChanged: (value) {
+                print('Dashboard Search query: $value');
+              },
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: GridView.builder(
+                itemCount: dashboardItems.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12.0,
+                  mainAxisSpacing: 12.0,
+                  childAspectRatio: 1.2,
+                ),
+                itemBuilder: (context, index) {
+                  final item = dashboardItems[index];
+                  return DashboardGridItem(
+                    icon: item.icon,
+                    title: item.title,
+                    onTap: item.onTap,
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildQuickActionCard(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
+// Helper class for dashboard item data (keep as is)
+class DashboardItem {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  DashboardItem({required this.icon, required this.title, required this.onTap});
+}
+
+// Widget for each item in the grid (keep as is)
+class DashboardGridItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const DashboardGridItem({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(height: 8),
-              Text(
+        borderRadius: BorderRadius.circular(12),
+        splashColor: AppColors.secondaryColor.withOpacity(0.2),
+        highlightColor: AppColors.secondaryColor.withOpacity(0.1),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40.0, color: AppColors.secondaryColor),
+            const SizedBox(height: 12.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 15),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

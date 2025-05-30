@@ -13,26 +13,32 @@ import 'providers/book_provider.dart';
 import 'providers/room_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/user_provider.dart';
-import 'providers/borrow_provider.dart';
+// import 'providers/borrow_provider.dart';
 import 'providers/room_booking_provider.dart';
 import 'providers/ai_chat_provider.dart';
 
 // Import services
 import 'services/book_service.dart';
-import 'services/borrow_service.dart';
 import 'services/room_booking_service.dart';
 import 'services/analytics_service.dart';
+import 'utils/seed.dart'; //for exporting test data
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    print('Error initializing Firebase: $e');
-    // Continue without Firebase for now
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform, // generated options
+  );
+
+  // ---- Optional: Seed Data ----
+
+  bool seedData = false; // Set to true once to seed, then false.
+  if (seedData) {
+    print("Seeding data...");
+    await FirestoreSeeder.seedLibriUniData();
+    print("Data seeding complete.");
   }
+  // ---- End Optional: Seed Data ----
+
   runApp(const MyApp());
 }
 
@@ -48,7 +54,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RoomProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => BorrowProvider()),
+        // ChangeNotifierProvider(create: (_) => BorrowProvider()),
         ChangeNotifierProvider(create: (_) => RoomBookingProvider()),
         ChangeNotifierProvider(create: (_) => AIChatProvider()),
       ],

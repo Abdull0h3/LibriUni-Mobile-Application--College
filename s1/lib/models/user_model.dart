@@ -48,7 +48,6 @@ class User {
 
   // Additional fields needed by our screens
   final String? profilePictureUrl;
-  final String? studentId;
   final String? department;
   final String? phone;
 
@@ -62,7 +61,6 @@ class User {
     this.phoneNumber,
     this.userID,
     this.profilePictureUrl,
-    this.studentId,
     this.department,
     this.phone,
   });
@@ -80,7 +78,6 @@ class User {
       phoneNumber: data['phoneNumber'],
       userID: data['userID'],
       profilePictureUrl: data['profilePictureUrl'] ?? data['photoUrl'],
-      studentId: data['studentId'],
       department: data['department'],
       phone: data['phone'] ?? data['phoneNumber'],
     );
@@ -97,7 +94,6 @@ class User {
       'phoneNumber': phoneNumber,
       'userID': userID,
       'profilePictureUrl': profilePictureUrl,
-      'studentId': studentId,
       'department': department,
       'phone': phone,
     };
@@ -114,7 +110,6 @@ class User {
     String? phoneNumber,
     String? userID,
     String? profilePictureUrl,
-    String? studentId,
     String? department,
     String? phone,
   }) {
@@ -128,9 +123,53 @@ class User {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       userID: userID ?? this.userID,
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-      studentId: studentId ?? this.studentId,
       department: department ?? this.department,
       phone: phone ?? this.phone,
     );
+  }
+}
+
+class LibriUniUser {
+  final String id; // Firestore document ID
+  final String name;
+  final String userIdString; // The displayable User ID (e.g., USR001)
+  final String email;
+  bool isActive;
+  // Overdue status might be calculated dynamically or stored if preferred
+  // todo: note, it was assumed it can be stored or derived.
+  // List<String> overdueBookIds;
+
+  LibriUniUser({
+    required this.id,
+    required this.name,
+    required this.userIdString,
+    required this.email,
+    required this.isActive,
+    // this.overdueBookIds = const [],
+  });
+
+  factory LibriUniUser.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final data = snapshot.data();
+    return LibriUniUser(
+      id: snapshot.id,
+      name: data?['name'] ?? 'Unknown User',
+      userIdString: data?['userIdString'] ?? '',
+      email: data?['email'] ?? '',
+      isActive: data?['isActive'] ?? false,
+      // overdueBookIds: List<String>.from(data?['overdueBookIds'] ?? []),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'userIdString': userIdString,
+      'email': email,
+      'isActive': isActive,
+      // 'overdueBookIds': overdueBookIds,
+    };
   }
 }

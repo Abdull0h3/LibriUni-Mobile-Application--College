@@ -1,32 +1,33 @@
 import 'package:flutter/foundation.dart';
-import '../models/book.dart';
+import '../models/book_model.dart';
 import '../services/book_service.dart';
 
 class BookProvider with ChangeNotifier {
   final BookService _bookService = BookService();
 
-  List<Book> _books = [];
-  List<Book> _filteredBooks = [];
+  List<BookModel> _books = [];
+  List<BookModel> _filteredBooks = [];
   bool _isLoading = false;
   String? _error;
   String _searchQuery = '';
   String _selectedCategory = '';
 
   // Getters
-  List<Book> get books => _books;
-  List<Book> get filteredBooks => _filteredBooks;
+  List<BookModel> get books => _books;
+  List<BookModel> get filteredBooks => _filteredBooks;
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get searchQuery => _searchQuery;
   String get selectedCategory => _selectedCategory;
 
-  // Fetch all books
+  // Fetch all books (once)
   Future<void> fetchBooks() async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      _books = await _bookService.getBooks();
+      final snapshot = await _bookService.getBooksStream().first;
+      _books = snapshot;
       _applyFilters();
 
       _isLoading = false;
@@ -40,71 +41,19 @@ class BookProvider with ChangeNotifier {
 
   // Search books
   Future<void> searchBooks(String query) async {
-    try {
-      _isLoading = true;
-      _searchQuery = query;
-      notifyListeners();
-
-      if (query.isEmpty) {
-        _applyFilters();
-      } else {
-        final results = await _bookService.getBooks();
-        final lowerQuery = query.toLowerCase();
-        final filtered =
-            results
-                .where(
-                  (book) =>
-                      book.title.toLowerCase().startsWith(lowerQuery) ||
-                      book.author.toLowerCase().startsWith(lowerQuery) ||
-                      book.category.toLowerCase().startsWith(lowerQuery),
-                )
-                .toList();
-
-        if (_selectedCategory.isNotEmpty) {
-          _filteredBooks =
-              filtered
-                  .where((book) => book.category == _selectedCategory)
-                  .toList();
-        } else {
-          _filteredBooks = filtered;
-        }
-      }
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-    }
+    _searchQuery = query;
+    _applyFilters();
+    notifyListeners();
   }
 
-  // Filter books by category
+  // Filter books by tag
   void filterByCategory(String category) {
     _selectedCategory = category;
     _applyFilters();
     notifyListeners();
   }
 
-  // Clear category filter
-  void clearCategoryFilter() {
-    _selectedCategory = '';
-    _applyFilters();
-    notifyListeners();
-  }
-
-  // Filter by availability
-  void filterByAvailability(bool showOnlyAvailable) {
-    if (showOnlyAvailable) {
-      _filteredBooks =
-          _filteredBooks.where((book) => book.isAvailable).toList();
-    } else {
-      _applyFilters();
-    }
-    notifyListeners();
-  }
-
-  // Clear filters
+  // Clear all filters
   void clearFilters() {
     _selectedCategory = '';
     _searchQuery = '';
@@ -113,14 +62,13 @@ class BookProvider with ChangeNotifier {
   }
 
   // Add a new book
-  Future<bool> addBook(Book book) async {
+  Future<bool> addBook(BookModel book) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      final String id = await _bookService.addBook(book);
-
-      final newBook = book.copyWith(id: id);
+      final docRef = await _bookService.addBook(book);
+      final newBook = book.copyWith(id: docRef.id);
       _books.add(newBook);
       _applyFilters();
 
@@ -136,12 +84,12 @@ class BookProvider with ChangeNotifier {
   }
 
   // Update a book
-  Future<bool> updateBook(Book book) async {
+  Future<bool> updateBook(BookModel book) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      await _bookService.updateBook(book);
+      await _bookService.updateBook(book.id, book);
 
       final index = _books.indexWhere((b) => b.id == book.id);
       if (index != -1) {
@@ -182,17 +130,17 @@ class BookProvider with ChangeNotifier {
     }
   }
 
-  // Update book availability
-  Future<bool> updateBookAvailability(String id, bool isAvailable) async {
+  // Update book status
+  Future<bool> updateBookStatus(String id, String newStatus) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      await _bookService.updateBookAvailability(id, isAvailable);
+      await _bookService.updateBookStatus(id, newStatus);
 
       final index = _books.indexWhere((b) => b.id == id);
       if (index != -1) {
-        _books[index] = _books[index].copyWith(isAvailable: isAvailable);
+        _books[index] = _books[index].copyWith(status: newStatus);
         _applyFilters();
       }
 
@@ -207,34 +155,24 @@ class BookProvider with ChangeNotifier {
     }
   }
 
-  // Apply all filters to books
+  // Apply filters
   void _applyFilters() {
-    if (_selectedCategory.isEmpty && _searchQuery.isEmpty) {
-      _filteredBooks = List.from(_books);
-      return;
-    }
-
     _filteredBooks =
         _books.where((book) {
-          // Filter by category if selected
-          if (_selectedCategory.isNotEmpty &&
-              book.category != _selectedCategory) {
+          if (_selectedCategory.isNotEmpty && book.tag != _selectedCategory)
             return false;
-          }
 
-          // Filter by search query if provided
           if (_searchQuery.isNotEmpty) {
             final query = _searchQuery.toLowerCase();
-            return book.title.toLowerCase().startsWith(query) ||
-                book.author.toLowerCase().startsWith(query) ||
-                book.category.toLowerCase().startsWith(query);
+            return book.title.toLowerCase().contains(query) ||
+                book.author.toLowerCase().contains(query) ||
+                book.code.toLowerCase().contains(query);
           }
 
           return true;
         }).toList();
   }
 
-  // Clear error
   void clearError() {
     _error = null;
     notifyListeners();

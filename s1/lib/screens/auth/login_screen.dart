@@ -43,17 +43,79 @@ class _LoginScreenState extends State<LoginScreen> {
         // Let the router handle the redirection based on user role
         context.go('/');
       } else if (!success && mounted) {
-        // Existing error message if login failed
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.error ?? 'Login failed'),
-            duration: const Duration(seconds: 3),
-          ),
+        // Show error dialog if login failed
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Login Failed'),
+                content: Text(authProvider.error ?? 'Login failed'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
         );
       }
     } finally {
       if (mounted) {
         setState(() => _localLoading = false); // end loading spinner
+      }
+    }
+  }
+
+  void _showForgotPasswordDialog() {
+    final TextEditingController emailController = TextEditingController(
+      text: _emailController.text,
+    );
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Reset Password'),
+            content: TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: 'Enter your email'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final email = emailController.text.trim();
+                  if (email.isNotEmpty) {
+                    await _sendPasswordResetEmail(email);
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Send'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Future<void> _sendPasswordResetEmail(String email) async {
+    try {
+      await Provider.of<AuthProvider>(
+        context,
+        listen: false,
+      ).sendPasswordResetEmail(email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password reset email sent!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     }
   }
@@ -153,6 +215,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                   onFieldSubmitted: isLoading ? null : (_) => _login(),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: isLoading ? null : _showForgotPasswordDialog,
+                  child: const Text('Forgot Password?'),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(

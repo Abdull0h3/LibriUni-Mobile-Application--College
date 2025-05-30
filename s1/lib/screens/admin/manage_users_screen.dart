@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/user_provider.dart';
-import '../../models/user.dart';
+import '../../models/user_model.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({Key? key}) : super(key: key);
