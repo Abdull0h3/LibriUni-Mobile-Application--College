@@ -15,7 +15,6 @@ import 'providers/notification_provider.dart';
 import 'providers/user_provider.dart';
 // import 'providers/borrow_provider.dart';
 import 'providers/room_booking_provider.dart';
-import 'providers/ai_chat_provider.dart';
 import 'providers/theme_provider.dart'; // <-- Added for dark mode
 
 // Import services
@@ -24,7 +23,9 @@ import 'services/room_booking_service.dart';
 import 'services/analytics_service.dart';
 import 'utils/seed.dart'; //for exporting test data
 
-import 'constants/app_theme.dart' hide RoomBookingProvider; // <-- If you have AppTheme.light and AppTheme.dark
+import 'constants/app_theme.dart'
+    hide
+        RoomBookingProvider; // <-- If you have AppTheme.light and AppTheme.dark
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,7 +53,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()), // <-- Added for dark mode
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(),
+        ), // <-- Added for dark mode
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => RoomProvider()),
@@ -60,7 +63,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         // ChangeNotifierProvider(create: (_) => BorrowProvider()),
         ChangeNotifierProvider(create: (_) => RoomBookingProvider()),
-        ChangeNotifierProvider(create: (_) => AIChatProvider()),
       ],
       child: Builder(
         builder: (context) {
@@ -115,7 +117,8 @@ class LibriUniApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light, // <-- Use your light theme
           darkTheme: AppTheme.dark, // <-- Use your dark theme
-          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          themeMode:
+              themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           routerConfig: _router,
         );
       },

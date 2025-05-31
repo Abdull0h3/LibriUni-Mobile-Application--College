@@ -32,7 +32,7 @@ class _MyReservedRoomsScreenState extends State<MyReservedRoomsScreen> {
   Widget build(BuildContext context) {
     int currentIndex = 0;
     final String path = GoRouterState.of(context).fullPath ?? '/student';
-    if (path.startsWith('/student/ai-chat')) {
+    if (path.startsWith('/student/chat')) {
       currentIndex = 1;
     } else if (path.startsWith('/student/profile')) {
       currentIndex = 2;

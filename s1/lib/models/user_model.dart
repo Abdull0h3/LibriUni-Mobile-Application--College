@@ -48,7 +48,6 @@ class User {
 
   // Additional fields needed by our screens
   final String? profilePictureUrl;
-  final String? department;
   final String? phone;
 
   User({
@@ -61,7 +60,6 @@ class User {
     this.phoneNumber,
     this.userID,
     this.profilePictureUrl,
-    this.department,
     this.phone,
   });
 
@@ -78,7 +76,6 @@ class User {
       phoneNumber: data['phoneNumber'],
       userID: data['userID'],
       profilePictureUrl: data['profilePictureUrl'] ?? data['photoUrl'],
-      department: data['department'],
       phone: data['phone'] ?? data['phoneNumber'],
     );
   }
@@ -94,7 +91,6 @@ class User {
       'phoneNumber': phoneNumber,
       'userID': userID,
       'profilePictureUrl': profilePictureUrl,
-      'department': department,
       'phone': phone,
     };
   }
@@ -110,7 +106,6 @@ class User {
     String? phoneNumber,
     String? userID,
     String? profilePictureUrl,
-    String? department,
     String? phone,
   }) {
     return User(
@@ -123,7 +118,6 @@ class User {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       userID: userID ?? this.userID,
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-      department: department ?? this.department,
       phone: phone ?? this.phone,
     );
   }

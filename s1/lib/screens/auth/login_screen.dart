@@ -138,21 +138,9 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 32),
-                const Icon(
-                  Icons.local_library,
-                  size: 80,
-                  color: AppColors.primary,
-                ),
+                Image.asset('assets/libriuni_logo_combination.png', height: 80),
                 const SizedBox(height: 24),
-                const Text(
-                  'LibriUni',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
+
                 const SizedBox(height: 8),
                 const Text(
                   'Access Your Library Anywhere, Everywhere.',

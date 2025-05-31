@@ -7,7 +7,7 @@ import '../../models/user_model.dart';
 
 class AddUserScreen extends StatefulWidget {
   final User? user; // Pass user for editing, null for adding
-  const AddUserScreen({Key? key, this.user}) : super(key: key);
+  const AddUserScreen({super.key, this.user});
 
   @override
   State<AddUserScreen> createState() => _AddUserScreenState();
@@ -18,7 +18,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _departmentController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   UserRole _selectedRole = UserRole.student;
   bool _isActive = true;
@@ -53,7 +52,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
       _nameController.text = _user!.name;
       _emailController.text = _user!.email;
       _phoneController.text = _user!.phone ?? '';
-      _departmentController.text = _user!.department ?? '';
       _selectedRole = _user!.role;
       _isActive = _user!.isActive;
     }
@@ -64,7 +62,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _departmentController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -88,10 +85,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
               _phoneController.text.trim().isEmpty
                   ? null
                   : _phoneController.text.trim(),
-          department:
-              _departmentController.text.trim().isEmpty
-                  ? null
-                  : _departmentController.text.trim(),
         );
         final password = _passwordController.text.trim();
         bool success;
@@ -248,17 +241,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
                               );
                             }).toList(),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Department
-                  TextFormField(
-                    controller: _departmentController,
-                    enabled: !_isLoading,
-                    decoration: const InputDecoration(
-                      labelText: 'Department (Optional)',
-                      hintText: 'Enter department',
-                      prefixIcon: Icon(Icons.business),
                     ),
                   ),
                   const SizedBox(height: 16),

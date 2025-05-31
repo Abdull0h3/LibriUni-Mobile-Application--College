@@ -4,6 +4,7 @@ import '../../services/chat_service.dart';
 import '../../models/chat_message_model.dart';
 import '../../constants/app_colors.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 class StudentChatScreen extends StatefulWidget {
   final String studentId;
@@ -64,6 +65,13 @@ class _StudentChatScreenState extends State<StudentChatScreen> {
         title: const Text('Staff Help'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate back to the student dashboard
+            context.go('/student');
+          },
+        ),
       ),
       body: Column(
         children: [

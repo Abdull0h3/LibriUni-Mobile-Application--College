@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class StudentNavBar extends StatelessWidget {
   final int currentIndex;
@@ -19,7 +21,14 @@ class StudentNavBar extends StatelessWidget {
         }
         break;
       case 1:
-        context.go('/student/ai-chat');
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final user = authProvider.user;
+        if (user != null) {
+          context.go(
+            '/student/chat',
+            extra: {'studentId': user.id, 'studentName': user.name},
+          );
+        }
         break;
       case 2:
         context.go('/student/profile');
@@ -30,9 +39,11 @@ class StudentNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final selectedIconColor = isDark ? const Color(0xFFF4B400) : const Color(0xFF1A365D);
+    final selectedIconColor =
+        isDark ? const Color(0xFFF4B400) : const Color(0xFF1A365D);
     final unselectedIconColor = isDark ? Colors.white : const Color(0xFF1A365D);
-    final selectedIconInnerColor = isDark ? const Color(0xFF1A365D) : Colors.white;
+    final selectedIconInnerColor =
+        isDark ? const Color(0xFF1A365D) : Colors.white;
     return NavigationBar(
       selectedIndex: currentIndex,
       onDestinationSelected: _onDestinationSelected,
@@ -46,7 +57,10 @@ class StudentNavBar extends StatelessWidget {
         NavigationDestination(
           tooltip: 'Chat with Library Staff',
           icon: Icon(Icons.support_agent_outlined, color: unselectedIconColor),
-          selectedIcon: Icon(Icons.support_agent, color: selectedIconInnerColor),
+          selectedIcon: Icon(
+            Icons.support_agent,
+            color: selectedIconInnerColor,
+          ),
           label: 'Staff Help',
         ),
         NavigationDestination(

@@ -181,11 +181,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 const Divider(),
                                 _buildInfoRow(
-                                  'Department',
-                                  user.department ?? 'Not available',
-                                ),
-                                const Divider(),
-                                _buildInfoRow(
                                   'Phone',
                                   user.phone ?? 'Not available',
                                 ),
@@ -209,11 +204,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                ListTile(
-                                  leading: const Icon(Icons.edit),
-                                  title: const Text('Edit Profile'),
-                                  onTap:
-                                      isLoading ? null : navigateToEditProfile,
+                                _buildActionButton(
+                                  'Update Profile',
+                                  Icons.edit,
+                                  isLoading
+                                      ? null
+                                      : () => context.push('/edit-profile'),
                                 ),
                                 _buildActionButton(
                                   'Change Password',
@@ -231,7 +227,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (_) => NewsAndEventsScreen(),
+                                            builder:
+                                                (_) => NewsAndEventsScreen(),
                                           ),
                                         );
                                       },
@@ -242,8 +239,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     return SwitchListTile(
                                       title: const Text('Dark Mode'),
                                       secondary: Icon(
-                                        themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                                        color: themeProvider.isDarkMode ? AppColors.warning : AppColors.primary,
+                                        themeProvider.isDarkMode
+                                            ? Icons.dark_mode
+                                            : Icons.light_mode,
+                                        color:
+                                            themeProvider.isDarkMode
+                                                ? AppColors.warning
+                                                : AppColors.primary,
                                       ),
                                       value: themeProvider.isDarkMode,
                                       onChanged: (value) {
@@ -309,8 +311,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isLogout = color == AppColors.error;
-    final iconColor = isLogout ? AppColors.error : (isDark ? AppColors.white : color);
-    final textColor = isLogout ? AppColors.error : (isDark ? AppColors.white : color);
+    final iconColor =
+        isLogout ? AppColors.error : (isDark ? AppColors.white : color);
+    final textColor =
+        isLogout ? AppColors.error : (isDark ? AppColors.white : color);
     return ListTile(
       leading: Icon(icon, color: iconColor),
       title: Text(text, style: TextStyle(color: textColor)),

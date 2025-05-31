@@ -24,23 +24,31 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
     }
 
     try {
-      final shouldLogout = await showDialog<bool>(
+      final shouldLogout =
+          await showDialog<bool>(
             context: context,
             barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              title: const Text('Logout'),
-              content: const Text('Are you sure you want to log out?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.primaryColor)),
+            builder:
+                (context) => AlertDialog(
+                  title: const Text('Logout'),
+                  content: const Text('Are you sure you want to log out?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: AppColors.primaryColor),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Logout', style: TextStyle(color: AppColors.error)),
-                ),
-              ],
-            ),
           ) ??
           false;
 
@@ -72,16 +80,16 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
-    final isLoading = _isLoading || authProvider.isLoading || authProvider.isProcessingAuth;
+    final isLoading =
+        _isLoading || authProvider.isLoading || authProvider.isProcessingAuth;
 
     // Fallback values if user is null, though ideally user should not be null here
     final String displayName = user?.name ?? 'Staff Member';
     final String displayEmail = user?.email ?? 'N/A';
-    final String displayStaffId = user?.id ?? 'N/A'; // Assuming user.id is the staff ID
-    final String displayDepartment = user?.department ?? 'N/A';
+    final String displayStaffId =
+        user?.id ?? 'N/A'; // Assuming user.id is the staff ID
     final String displayPhone = user?.phone ?? 'N/A';
     final String? profilePictureUrl = user?.profilePictureUrl;
-
 
     return Stack(
       children: [
@@ -99,164 +107,189 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
               onPressed: isLoading ? null : () => context.pop(),
             ),
           ),
-          body: user == null
-              ? const Center(
-                  child: Text('Loading profile...'),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      const SizedBox(height: 20),
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: AppColors.secondaryColor.withOpacity(0.3), // Yellow accent
-                        backgroundImage: profilePictureUrl != null && profilePictureUrl.isNotEmpty
-                            ? NetworkImage(profilePictureUrl)
-                            : null,
-                        child: (profilePictureUrl == null || profilePictureUrl.isEmpty)
-                            ? const Icon(Icons.person, size: 50, color: AppColors.primaryColor)
-                            : null,
-                      ),
-                      const SizedBox(height: 16.0),
-                      Text(
-                        displayName,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColorDark,
+          body:
+              user == null
+                  ? const Center(child: Text('Loading profile...'))
+                  : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        const SizedBox(height: 20),
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: AppColors.secondaryColor.withOpacity(
+                            0.3,
+                          ), // Yellow accent
+                          backgroundImage:
+                              profilePictureUrl != null &&
+                                      profilePictureUrl.isNotEmpty
+                                  ? NetworkImage(profilePictureUrl)
+                                  : null,
+                          child:
+                              (profilePictureUrl == null ||
+                                      profilePictureUrl.isEmpty)
+                                  ? const Icon(
+                                    Icons.person,
+                                    size: 50,
+                                    color: AppColors.primaryColor,
+                                  )
+                                  : null,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 4.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            displayEmail,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textSecondary, // Medium Gray
-                            ),
+                        const SizedBox(height: 16.0),
+                        Text(
+                          displayName,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColorDark,
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryColor, // Dark Blue
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              'Staff', // Role badge
-                              style: TextStyle(
-                                color: AppColors.textColorLight, // White
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              displayEmail,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary, // Medium Gray
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32.0),
-                      Card(
-                        color: AppColors.cardBackgroundColor, // White
-                        elevation: 2.0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: <Widget>[
-                              _buildInfoRow(
-                                icon: Icons.badge_outlined,
-                                label: 'Staff ID',
-                                value: displayStaffId,
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
                               ),
-                              const Divider(color: AppColors.lightGray),
-                              _buildInfoRow(
-                                icon: Icons.work_outline,
-                                label: 'Department',
-                                value: displayDepartment,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor, // Dark Blue
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              const Divider(color: AppColors.lightGray),
-                               _buildInfoRow(
-                                icon: Icons.phone_outlined,
-                                label: 'Phone',
-                                value: displayPhone,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24.0),
-                      Card(
-                        color: AppColors.cardBackgroundColor, // White
-                        elevation: 2.0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Account Settings',
+                              child: const Text(
+                                'Staff', // Role badge
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  color: AppColors.textColorLight, // White
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              _buildActionButton(
-                                text: 'Edit Profile',
-                                icon: Icons.edit_outlined,
-                                onTap: isLoading ? null : () {
-                                  context.push('/edit-profile');
-                                  // Consider refreshing data on return if needed:
-                                  // .then((_) => authProvider.initializeUser());
-                                },
-                              ),
-                              _buildActionButton(
-                                text: 'Change Password',
-                                icon: Icons.lock_outline,
-                                onTap: isLoading ? null : () {
-                                  context.push('/change-password');
-                                },
-                              ),
-                              _buildActionButton(
-                                text: 'Logout',
-                                icon: Icons.logout_outlined,
-                                color: AppColors.error, // Red for logout
-                                onTap: isLoading ? null : () => _handleLogout(context),
-                              ),
-                            ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32.0),
+                        Card(
+                          color: AppColors.cardBackgroundColor, // White
+                          elevation: 2.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: <Widget>[
+                                _buildInfoRow(
+                                  icon: Icons.badge_outlined,
+                                  label: 'Staff ID',
+                                  value: displayStaffId,
+                                ),
+                                const Divider(color: AppColors.lightGray),
+                                _buildInfoRow(
+                                  icon: Icons.phone_outlined,
+                                  label: 'Phone',
+                                  value: displayPhone,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 24.0),
+                        Card(
+                          color: AppColors.cardBackgroundColor, // White
+                          elevation: 2.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Account Settings',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textColorDark,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                _buildActionButton(
+                                  text: 'Edit Profile',
+                                  icon: Icons.edit_outlined,
+                                  onTap:
+                                      isLoading
+                                          ? null
+                                          : () {
+                                            context.push('/edit-profile');
+                                            // Consider refreshing data on return if needed:
+                                            // .then((_) => authProvider.initializeUser());
+                                          },
+                                ),
+                                _buildActionButton(
+                                  text: 'Change Password',
+                                  icon: Icons.lock_outline,
+                                  onTap:
+                                      isLoading
+                                          ? null
+                                          : () {
+                                            context.push('/change-password');
+                                          },
+                                ),
+                                _buildActionButton(
+                                  text: 'Logout',
+                                  icon: Icons.logout_outlined,
+                                  color: AppColors.error, // Red for logout
+                                  onTap:
+                                      isLoading
+                                          ? null
+                                          : () => _handleLogout(context),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
         ),
         if (isLoading)
           Container(
             color: Colors.black.withOpacity(0.5),
-            child: const Center(child: CircularProgressIndicator(color: AppColors.secondaryColor)),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.secondaryColor),
+            ),
           ),
       ],
     );
   }
 
-  Widget _buildInfoRow({required IconData icon, required String label, required String value}) {
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(icon, color: AppColors.primaryColor, size: 22.0), // Dark Blue icon
+          Icon(
+            icon,
+            color: AppColors.primaryColor,
+            size: 22.0,
+          ), // Dark Blue icon
           const SizedBox(width: 16.0),
           Expanded(
             child: Column(
@@ -293,11 +326,25 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
     Color color = AppColors.textColorDark, // Default to textColorDark
   }) {
     return ListTile(
-      leading: Icon(icon, color: color == AppColors.error ? AppColors.error : AppColors.primaryColor), // Use primaryColor for icons unless it's an error action
-      title: Text(text, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w500)),
+      leading: Icon(
+        icon,
+        color:
+            color == AppColors.error ? AppColors.error : AppColors.primaryColor,
+      ), // Use primaryColor for icons unless it's an error action
+      title: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
       trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 8.0,
+        vertical: 4.0,
+      ),
     );
   }
 }

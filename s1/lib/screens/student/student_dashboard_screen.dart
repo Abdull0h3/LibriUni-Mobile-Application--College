@@ -39,7 +39,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     super.didChangeDependencies();
     // Update current index based on route
     final String path = GoRouterState.of(context).fullPath ?? '/student';
-    if (path.startsWith('/student/ai-chat')) {
+    if (path.startsWith('/student/chat')) {
       setState(() => _currentIndex = 1);
     } else if (path.startsWith('/student/profile')) {
       setState(() => _currentIndex = 2);
@@ -68,14 +68,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 // Navigate to news and events list when notification icon is pressed
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => NewsAndEventsScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => NewsAndEventsScreen()),
                 );
               },
             ),
           ),
-          PopupMenuButton<String>(
+          IconButton(
             icon: CircleAvatar(
               radius: 16,
               backgroundColor: AppColors.secondary,
@@ -84,40 +82,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 style: const TextStyle(color: AppColors.white),
               ),
             ),
-            offset: const Offset(0, 40),
-            onSelected: (value) {
-              switch (value) {
-                case 'profile':
-                  context.push('/student/profile');
-                  break;
-                case 'logout':
-                  authProvider.signOut();
-                  break;
-              }
+            onPressed: () {
+              context.push('/student/profile');
             },
-            itemBuilder:
-                (context) => [
-                  const PopupMenuItem(
-                    value: 'profile',
-                    child: Row(
-                      children: [
-                        Icon(Icons.person_outline),
-                        SizedBox(width: 8),
-                        Text('Profile'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'logout',
-                    child: Row(
-                      children: [
-                        Icon(Icons.logout),
-                        SizedBox(width: 8),
-                        Text('Logout'),
-                      ],
-                    ),
-                  ),
-                ],
           ),
           const SizedBox(width: 16),
         ],
@@ -160,7 +127,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             _buildInfoCard(
               icon: Icons.timer,
               title: 'Reminders',
-              content: '2 books due in 3 days',
+              content: '',
               color: AppColors.warning,
               onTap: () => context.push('/student/reminders'),
             ),
@@ -168,7 +135,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: StudentNavBar(currentIndex: _currentIndex, context: context),
+      bottomNavigationBar: StudentNavBar(
+        currentIndex: _currentIndex,
+        context: context,
+      ),
     );
   }
 
@@ -187,7 +157,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: isDark ? AppColors.yellow : AppColors.primary),
+            Icon(
+              icon,
+              size: 48,
+              color: isDark ? AppColors.yellow : AppColors.primary,
+            ),
             const SizedBox(height: 16),
             Text(
               title,
@@ -215,9 +189,22 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return Card(
       child: ListTile(
         leading: Icon(icon, color: isDark ? AppColors.yellow : color),
-        title: Text(title, style: TextStyle(color: isDark ? AppColors.white : AppColors.textPrimary)),
-        subtitle: Text(content, style: TextStyle(color: isDark ? AppColors.white : AppColors.textSecondary)),
-        trailing: Icon(Icons.chevron_right, color: isDark ? AppColors.white : AppColors.textPrimary),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isDark ? AppColors.white : AppColors.textPrimary,
+          ),
+        ),
+        subtitle: Text(
+          content,
+          style: TextStyle(
+            color: isDark ? AppColors.white : AppColors.textSecondary,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: isDark ? AppColors.white : AppColors.textPrimary,
+        ),
         onTap: onTap,
       ),
     );

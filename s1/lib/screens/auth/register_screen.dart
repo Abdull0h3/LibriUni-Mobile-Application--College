@@ -92,11 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(
-                  Icons.local_library,
-                  size: 64,
-                  color: AppColors.primary,
-                ),
+                Image.asset('assets/libriuni_logo_combination.png', height: 64),
                 const SizedBox(height: 16),
                 const Text(
                   'Create Your Account',
