@@ -19,6 +19,7 @@ import '../screens/student/reminders_screen.dart'; // <-- Added import
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/manage_users_screen.dart';
 import '../screens/admin/manage_rooms_screen.dart';
+import '../screens/admin/admin_manage_books_screen.dart';
 import '../screens/admin/analytics_screen.dart';
 import '../screens/admin/add_user_screen.dart';
 import '../screens/admin/add_room_screen.dart';
@@ -39,9 +40,10 @@ import '/screens/staff/manage_fines_screen.dart';
 import '/screens/staff/loan_form_screen.dart';
 import '../screens/staff/staff_chat_screen.dart';
 import '../screens/staff/staff_student_chat_detail_screen.dart';
-import '../screens/staff/staff_profile_screen.dart';//NEW
-import '../screens/staff/staff_book_detail_screen.dart';//NEW
-import '../screens/staff/manage_rooms_screen.dart' as staff_manage_rooms; // Alias for staff screen
+import '../screens/staff/staff_profile_screen.dart'; //NEW
+import '../screens/staff/staff_book_detail_screen.dart'; //NEW
+import '../screens/staff/manage_rooms_screen.dart'
+    as staff_manage_rooms; // Alias for staff screen
 import '../models/room.dart'; // Ensure Room model is imported
 
 class AppRouter {
@@ -180,11 +182,13 @@ class AppRouter {
           );
         },
       ),
-      GoRoute( // Add this route for the staff profile
+      GoRoute(
+        // Add this route for the staff profile
         path: '/staff/profile',
         builder: (context, state) => const StaffProfileScreen(),
       ),
-      GoRoute( // Add this route for staff book detail
+      GoRoute(
+        // Add this route for staff book detail
         path: '/staff/catalog/book-detail',
         builder: (context, state) {
           final book = state.extra as BookModel;
@@ -194,7 +198,8 @@ class AppRouter {
       // Staff Manage Rooms - This screen will internally use admin routes for add/edit actions
       GoRoute(
         path: '/staff/reserved-rooms',
-        builder: (context, state) => const staff_manage_rooms.ManageRoomsScreen(),
+        builder:
+            (context, state) => const staff_manage_rooms.ManageRoomsScreen(),
       ),
 
       // Student routes with shell navigation
@@ -266,7 +271,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/admin/books',
-        builder: (context, state) => const ManageBooksScreen(),
+        builder: (context, state) => const AdminManageBooksScreen(),
       ),
       GoRoute(
         path: '/admin/users',
