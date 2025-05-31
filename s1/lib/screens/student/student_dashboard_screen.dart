@@ -65,51 +65,22 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               },
             ),
           ),
-          PopupMenuButton<String>(
+          // Replaced PopupMenuButton with IconButton for direct navigation
+          IconButton(
             icon: CircleAvatar(
               radius: 16,
-              backgroundColor: AppColors.secondary,
+              backgroundColor: AppColors.secondary, // Assuming AppColors.secondary is defined
               child: Text(
                 userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
-                style: const TextStyle(color: AppColors.white),
+                style: const TextStyle(color: AppColors.white), // Assuming AppColors.white is defined
               ),
             ),
-            offset: const Offset(0, 40),
-            onSelected: (value) {
-              switch (value) {
-                case 'profile':
-                  context.push('/student/profile');
-                  break;
-                case 'logout':
-                  authProvider.signOut();
-                  break;
-              }
+            tooltip: 'Profile Settings', // Added tooltip for clarity
+            onPressed: () {
+              context.push('/student/profile'); // Navigate directly to profile
             },
-            itemBuilder:
-                (context) => [
-                  const PopupMenuItem(
-                    value: 'profile',
-                    child: Row(
-                      children: [
-                        Icon(Icons.person_outline),
-                        SizedBox(width: 8),
-                        Text('Profile'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'logout',
-                    child: Row(
-                      children: [
-                        Icon(Icons.logout),
-                        SizedBox(width: 8),
-                        Text('Logout'),
-                      ],
-                    ),
-                  ),
-                ],
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 16), // Keep consistent spacing
         ],
       ),
       body: Padding(
@@ -178,17 +149,19 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
-          setState(() => _currentIndex = index);
+          // setState(() => _currentIndex = index); // Handled by didChangeDependencies on route change
           switch (index) {
             case 0:
-              if ((GoRouterState.of(context).fullPath ?? '/student') !=
-                  '/student') {
+              // Only navigate if not already on the base student dashboard
+              if ((GoRouterState.of(context).fullPath ?? '/student') != '/student') {
                 context.go('/student');
               }
               break;
             case 1:
               final user = authProvider.user;
               if (user != null) {
+                // Check if already on the chat screen to avoid pushing multiple times if desired
+                // For now, it pushes, which is fine.
                 context.push(
                   '/student/chat',
                   extra: {'studentId': user.id, 'studentName': user.name},
@@ -196,7 +169,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               }
               break;
             case 2:
-              context.go('/student/profile');
+              // Only navigate if not already on the profile screen
+              if (! (GoRouterState.of(context).fullPath?.startsWith('/student/profile') ?? false) ) {
+                context.go('/student/profile');
+              }
               break;
           }
         },
