@@ -69,96 +69,118 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        elevation: 0,
+        backgroundColor: AppColors.primary,
+        title: const Text(
+          'Admin Dashboard',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.person, color: Colors.white),
             onPressed: () => context.push('/admin/profile'),
           ),
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: AppColors.primary),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 30,
-                    child: Icon(
-                      Icons.admin_panel_settings,
-                      size: 30,
-                      color: AppColors.primary,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+            ),
+          ),
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: const BoxDecoration(color: Colors.transparent),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Icon(
+                        Icons.admin_panel_settings,
+                        size: 30,
+                        color: AppColors.primary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    user?.name ?? 'Admin',
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Text(
-                    user?.email ?? '',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
+                    const SizedBox(height: 15),
+                    Text(
+                      user?.name ?? 'Admin',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      user?.email ?? '',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
-              selected: true,
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('Manage Books'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/admin/books');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Manage Users'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/admin/users');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.meeting_room),
-              title: const Text('Manage Rooms'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/admin/rooms');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.analytics),
-              title: const Text('Analytics'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/admin/analytics');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                authProvider.signOut();
-                context.go('/login');
-              },
-            ),
-          ],
+              _buildDrawerItem(
+                icon: Icons.dashboard,
+                title: 'Dashboard',
+                isSelected: true,
+                onTap: () => Navigator.pop(context),
+              ),
+              _buildDrawerItem(
+                icon: Icons.book,
+                title: 'Manage Books',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/admin/books');
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.people,
+                title: 'Manage Users',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/admin/users');
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.meeting_room,
+                title: 'Manage Rooms',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/admin/rooms');
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.analytics,
+                title: 'Analytics',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/admin/analytics');
+                },
+              ),
+              const Divider(color: Colors.white24),
+              _buildDrawerItem(
+                icon: Icons.logout,
+                title: 'Logout',
+                onTap: () {
+                  Navigator.pop(context);
+                  authProvider.signOut();
+                  context.go('/login');
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body:
@@ -166,141 +188,125 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ? const Center(child: CircularProgressIndicator())
               : RefreshIndicator(
                 onRefresh: _loadData,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'System Overview',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.white, Colors.grey[50]!],
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primary,
+                                AppColors.primary.withOpacity(0.8),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.admin_panel_settings,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                              SizedBox(width: 15),
+                              Text(
+                                'System Overview',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Stat cards
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              'Total Books',
-                              _totalBooks.toString(),
-                              Icons.book,
-                              AppColors.primary,
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard(
+                                'Total Books',
+                                _totalBooks.toString(),
+                                Icons.book,
+                                AppColors.warning,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Available Books',
-                              _availableBooks.toString(),
-                              Icons.check_circle,
-                              AppColors.success,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _buildStatCard(
+                                'Available Books',
+                                _availableBooks.toString(),
+                                Icons.check_circle,
+                                AppColors.warning,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              'Total Users',
-                              _totalUsers.toString(),
-                              Icons.people,
-                              AppColors.secondary,
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard(
+                                'Total Users',
+                                _totalUsers.toString(),
+                                Icons.people,
+                                AppColors.warning,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Study Rooms',
-                              _totalRooms.toString(),
-                              Icons.meeting_room,
-                              AppColors.warning,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _buildStatCard(
+                                'Study Rooms',
+                                _totalRooms.toString(),
+                                Icons.meeting_room,
+                                AppColors.warning,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      // Add Manage News action card
-                      _buildActionCard(
-                        'Manage News',
-                        Icons.article,
-                        () => context.push('/admin/news'),
-                      ),
-                      const SizedBox(height: 24),
-                      // Book availability chart (moved to AnalyticsScreen)
-                      // Card(
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.all(16.0),
-                      //     child: Column(
-                      //       crossAxisAlignment: CrossAxisAlignment.start,
-                      //       children: [
-                      //         const Text(
-                      //           'Book Availability',
-                      //           style: TextStyle(
-                      //             fontSize: 18,
-                      //             fontWeight: FontWeight.bold,
-                      //           ),
-                      //         ),
-                      //         const SizedBox(height: 24),
-                      //         SizedBox(
-                      //           height: 200,
-                      //           child: PieChart(
-                      //             PieChartData(
-                      //               sections: [
-                      //                 PieChartSectionData(
-                      //                   color: AppColors.success,
-                      //                   value: _availableBooks.toDouble(),
-                      //                   title: 'Available',
-                      //                   radius: 80,
-                      //                   titleStyle: const TextStyle(
-                      //                     color: Colors.white,
-                      //                     fontWeight: FontWeight.bold,
-                      //                   ),
-                      //                 ),
-                      //                 PieChartSectionData(
-                      //                   color: AppColors.error,
-                      //                   value:
-                      //                       (_totalBooks - _availableBooks)
-                      //                           .toDouble(),
-                      //                   title: 'Borrowed',
-                      //                   radius: 80,
-                      //                   titleStyle: const TextStyle(
-                      //                     color: Colors.white,
-                      //                     fontWeight: FontWeight.bold,
-                      //                   ),
-                      //                 ),
-                      //               ],
-                      //               sectionsSpace: 0,
-                      //               centerSpaceRadius: 40,
-                      //             ),
-                      //           ),
-                      //         ),
-                      //         const SizedBox(height: 16),
-                      //         Row(
-                      //           mainAxisAlignment: MainAxisAlignment.center,
-                      //           children: [
-                      //             _buildLegendItem(
-                      //               'Available',
-                      //               AppColors.success,
-                      //             ),
-                      //             const SizedBox(width: 24),
-                      //             _buildLegendItem('Borrowed', AppColors.error),
-                      //           ],
-                      //         ),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 24),
-                    ],
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        _buildActionCard(
+                          'Manage News',
+                          Icons.article,
+                          () => context.push('/admin/news'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    bool isSelected = false,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.white24 : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.white),
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        onTap: onTap,
+      ),
     );
   }
 
@@ -310,71 +316,90 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     IconData icon,
     Color color,
   ) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
+                child: Icon(icon, color: color),
+              ),
+              const Spacer(),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          Text(title, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+        ],
       ),
     );
   }
 
-  Widget _buildLegendItem(String title, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Text(title),
-      ],
-    );
-  }
-
   Widget _buildActionCard(String title, IconData icon, VoidCallback onTap) {
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: AppColors.primary),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
           ),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppColors.primary),
+            ),
+            const SizedBox(width: 15),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const Spacer(),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+          ],
         ),
       ),
     );

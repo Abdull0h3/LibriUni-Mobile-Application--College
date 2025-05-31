@@ -236,10 +236,18 @@ class RoomProvider with ChangeNotifier {
     _filteredRooms =
         _rooms.where((room) {
           // Filter by status if selected
-          if (_statusFilter.isNotEmpty) {
-            if (_statusFilter == 'available' && room.isReserved) {
-              return false;
-            } else if (_statusFilter == 'reserved' && !room.isReserved) {
+          if (_statusFilter.isNotEmpty && _statusFilter != 'all') {
+            // Map string status to RoomStatus enum for filtering
+            final RoomStatus? statusEnum =
+                _statusFilter.toLowerCase() == 'available'
+                    ? RoomStatus.available
+                    : _statusFilter.toLowerCase() == 'occupied'
+                    ? RoomStatus.occupied
+                    : _statusFilter.toLowerCase() == 'under maintenance'
+                    ? RoomStatus.underMaintenance
+                    : null;
+
+            if (statusEnum != null && room.status != statusEnum) {
               return false;
             }
           }

@@ -2,32 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
-import '../../providers/room_provider.dart';
-import '../../models/room.dart';
+import '../../providers/book_provider.dart';
+import '../../models/book_model.dart';
 
-class ManageRoomsScreen extends StatefulWidget {
-  const ManageRoomsScreen({Key? key}) : super(key: key);
+class AdminManageBooksScreen extends StatefulWidget {
+  const AdminManageBooksScreen({super.key});
 
   @override
-  State<ManageRoomsScreen> createState() => _ManageRoomsScreenState();
+  State<AdminManageBooksScreen> createState() => _AdminManageBooksScreenState();
 }
 
-class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
+class _AdminManageBooksScreenState extends State<AdminManageBooksScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isLoading = false;
-  List<String> _statusFilters = [
-    'All',
-    'Available',
-    'Occupied',
-    'Under Maintenance',
-  ];
-  String _selectedStatus = 'All';
 
   @override
   void initState() {
     super.initState();
-    _loadRooms();
+    _loadBooks();
   }
 
   @override
@@ -36,18 +29,18 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
     super.dispose();
   }
 
-  Future<void> _loadRooms() async {
+  Future<void> _loadBooks() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final roomProvider = Provider.of<RoomProvider>(context, listen: false);
-      await roomProvider.fetchRooms();
+      final bookProvider = Provider.of<BookProvider>(context, listen: false);
+      await bookProvider.fetchBooks();
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to load rooms: $e')));
+      ).showSnackBar(SnackBar(content: Text('Failed to load books: $e')));
     } finally {
       setState(() {
         _isLoading = false;
@@ -55,37 +48,29 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
     }
   }
 
-  void _searchRooms(String query) {
+  void _searchBooks(String query) {
     setState(() {
       _searchQuery = query;
     });
-    final roomProvider = Provider.of<RoomProvider>(context, listen: false);
-    roomProvider.searchRooms(query);
+    final bookProvider = Provider.of<BookProvider>(context, listen: false);
+    bookProvider.searchBooks(query);
   }
 
-  void _filterByStatus(String status) {
-    setState(() {
-      _selectedStatus = status;
-    });
-    final roomProvider = Provider.of<RoomProvider>(context, listen: false);
-    roomProvider.filterByStatus(status);
+  void _addNewBook() {
+    context.push('/admin/books/add');
   }
 
-  void _addNewRoom() {
-    context.push('/admin/rooms/add');
+  void _editBook(BookModel book) {
+    context.push('/admin/books/add', extra: book);
   }
 
-  void _editRoom(Room room) {
-    context.push('/admin/rooms/add', extra: room);
-  }
-
-  void _deleteRoom(Room room) {
+  void _deleteBook(BookModel book) {
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Delete Room'),
-            content: Text('Are you sure you want to delete "${room.name}"?'),
+            title: const Text('Delete Book'),
+            content: Text('Are you sure you want to delete "${book.title}"?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -94,14 +79,14 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
               TextButton(
                 onPressed: () async {
                   Navigator.pop(context);
-                  final roomProvider = Provider.of<RoomProvider>(
+                  final bookProvider = Provider.of<BookProvider>(
                     context,
                     listen: false,
                   );
-                  await roomProvider.deleteRoom(room.id);
-                  _loadRooms();
+                  await bookProvider.deleteBook(book.id);
+                  _loadBooks();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Room deleted successfully')),
+                    const SnackBar(content: Text('Book deleted successfully')),
                   );
                 },
                 style: TextButton.styleFrom(foregroundColor: AppColors.error),
@@ -112,43 +97,17 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
     );
   }
 
-  Color _getStatusColor(RoomStatus status) {
-    switch (status) {
-      case RoomStatus.available:
-        return AppColors.success;
-      case RoomStatus.occupied:
-        return AppColors.error;
-      case RoomStatus.underMaintenance:
-        return AppColors.warning;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _getStatusText(RoomStatus status) {
-    switch (status) {
-      case RoomStatus.available:
-        return 'Available';
-      case RoomStatus.occupied:
-        return 'Occupied';
-      case RoomStatus.underMaintenance:
-        return 'Maintenance';
-      default:
-        return 'Unknown';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final roomProvider = Provider.of<RoomProvider>(context);
-    final rooms = roomProvider.filteredRooms;
+    final bookProvider = Provider.of<BookProvider>(context);
+    final books = bookProvider.filteredBooks;
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         backgroundColor: AppColors.primary,
         title: const Text(
-          'Manage Rooms',
+          'Manage Books',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -166,13 +125,12 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
         ),
         child: Column(
           children: [
-            // Search Bar
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search rooms...',
+                  hintText: 'Search books...',
                   hintStyle: TextStyle(color: Colors.grey[600]),
                   prefixIcon: const Icon(
                     Icons.search,
@@ -187,7 +145,7 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
                             ),
                             onPressed: () {
                               _searchController.clear();
-                              _searchRooms('');
+                              _searchBooks('');
                             },
                           )
                           : null,
@@ -202,65 +160,26 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
                     horizontal: 20.0,
                   ),
                 ),
-                onChanged: _searchRooms,
+                onChanged: _searchBooks,
                 style: TextStyle(color: AppColors.textPrimary),
               ),
             ),
-            // Status filter
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              height: 50,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _statusFilters.length,
-                itemBuilder: (context, index) {
-                  final status = _statusFilters[index];
-                  final isSelected = _selectedStatus == status;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: FilterChip(
-                      label: Text(status),
-                      selected: isSelected,
-                      onSelected: (selected) => _filterByStatus(status),
-                      backgroundColor: Colors.grey[200],
-                      selectedColor: AppColors.primary,
-                      checkmarkColor: Colors.white,
-                      labelStyle: TextStyle(
-                        color:
-                            isSelected ? Colors.white : AppColors.textPrimary,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide.none,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
             const SizedBox(height: 16),
-            // Room list
             Expanded(
               child:
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : rooms.isEmpty
-                      ? const Center(child: Text('No rooms found'))
+                      : books.isEmpty
+                      ? const Center(child: Text('No books found'))
                       : ListView.builder(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
                           vertical: 8.0,
                         ),
-                        itemCount: rooms.length,
+                        itemCount: books.length,
                         itemBuilder: (context, index) {
-                          final room = rooms[index];
-                          return _buildRoomListItem(room);
+                          final book = books[index];
+                          return _buildBookListItem(book);
                         },
                       ),
             ),
@@ -268,7 +187,7 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _isLoading ? null : _addNewRoom,
+        onPressed: _isLoading ? null : _addNewBook,
         backgroundColor: AppColors.secondary,
         child: const Icon(Icons.add, color: Colors.white),
         elevation: 4.0,
@@ -276,7 +195,7 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
     );
   }
 
-  Widget _buildRoomListItem(Room room) {
+  Widget _buildBookListItem(BookModel book) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
       padding: const EdgeInsets.all(12.0),
@@ -293,28 +212,32 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
       ),
       child: Row(
         children: [
-          // Room Icon/Indicator
           Container(
-            width: 50,
-            height: 50,
+            width: 60,
+            height: 80,
             decoration: BoxDecoration(
-              color: _getStatusColor(room.status).withOpacity(0.2),
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(8),
+              image:
+                  book.coverUrl != null
+                      ? DecorationImage(
+                        image: NetworkImage(book.coverUrl!),
+                        fit: BoxFit.cover,
+                      )
+                      : null,
             ),
-            child: Icon(
-              Icons.meeting_room,
-              size: 30,
-              color: _getStatusColor(room.status),
-            ),
+            child:
+                book.coverUrl == null
+                    ? const Icon(Icons.book, size: 30, color: Colors.grey)
+                    : null,
           ),
           const SizedBox(width: 16),
-          // Room Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  room.name,
+                  book.title,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -325,22 +248,14 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Capacity: ${room.capacity}',
+                  '${book.author} • ${book.category}',
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                if (room.location != null && room.location!.isNotEmpty)
-                  Text(
-                    'Location: ${room.location}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -348,13 +263,19 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(room.status).withOpacity(0.2),
+                    color:
+                        book.status == 'Available'
+                            ? AppColors.success.withOpacity(0.2)
+                            : AppColors.warning.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    _getStatusText(room.status),
+                    book.status,
                     style: TextStyle(
-                      color: _getStatusColor(room.status),
+                      color:
+                          book.status == 'Available'
+                              ? AppColors.success
+                              : AppColors.warning,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -364,19 +285,18 @@ class _ManageRoomsScreenState extends State<ManageRoomsScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          // Action Buttons
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
                 icon: const Icon(Icons.edit, color: AppColors.primary),
-                onPressed: _isLoading ? null : () => _editRoom(room),
-                tooltip: 'Edit Room',
+                onPressed: _isLoading ? null : () => _editBook(book),
+                tooltip: 'Edit Book',
               ),
               IconButton(
                 icon: const Icon(Icons.delete, color: AppColors.error),
-                onPressed: _isLoading ? null : () => _deleteRoom(room),
-                tooltip: 'Delete Room',
+                onPressed: _isLoading ? null : () => _deleteBook(book),
+                tooltip: 'Delete Book',
               ),
             ],
           ),

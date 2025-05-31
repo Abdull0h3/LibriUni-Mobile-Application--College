@@ -159,12 +159,14 @@ class BookProvider with ChangeNotifier {
   void _applyFilters() {
     _filteredBooks =
         _books.where((book) {
-          if (_selectedCategory.isNotEmpty && book.tag != _selectedCategory)
+          if (_selectedCategory.isNotEmpty &&
+              _selectedCategory != 'All' &&
+              book.tag?.toLowerCase() != _selectedCategory.toLowerCase())
             return false;
 
           if (_searchQuery.isNotEmpty) {
             final query = _searchQuery.toLowerCase();
-            return book.title.toLowerCase().contains(query) ||
+            return book.title.toLowerCase().startsWith(query) ||
                 book.author.toLowerCase().contains(query) ||
                 book.code.toLowerCase().contains(query);
           }

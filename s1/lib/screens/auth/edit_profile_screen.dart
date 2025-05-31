@@ -17,7 +17,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _departmentController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -32,7 +31,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (user != null) {
       _nameController.text = user.name;
       _phoneController.text = user.phone ?? '';
-      _departmentController.text = user.department ?? '';
     }
   }
 
@@ -40,7 +38,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _departmentController.dispose();
     super.dispose();
   }
 
@@ -64,10 +61,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _phoneController.text.trim().isEmpty
                 ? null
                 : _phoneController.text.trim(),
-        department:
-            _departmentController.text.trim().isEmpty
-                ? null
-                : _departmentController.text.trim(),
       );
 
       final success = await authProvider.updateProfile(updatedUser);
@@ -149,15 +142,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 keyboardType: TextInputType.phone,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _departmentController,
-                enabled: !_isLoading,
-                decoration: const InputDecoration(
-                  labelText: 'Department',
-                  prefixIcon: Icon(Icons.business),
-                ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
