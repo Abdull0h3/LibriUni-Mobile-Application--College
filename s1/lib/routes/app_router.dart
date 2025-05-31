@@ -38,6 +38,11 @@ import '/screens/staff/manage_fines_screen.dart';
 import '/screens/staff/loan_form_screen.dart';
 import '../screens/staff/staff_chat_screen.dart';
 import '../screens/staff/staff_student_chat_detail_screen.dart';
+import '../screens/staff/staff_profile_screen.dart';//NEW
+import '../screens/staff/staff_book_detail_screen.dart';//NEW
+import '../screens/staff/manage_rooms_screen.dart' as staff_manage_rooms; // Alias for staff screen
+import '../models/room.dart'; // Ensure Room model is imported
+
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -174,6 +179,22 @@ class AppRouter {
             studentName: studentName,
           );
         },
+      ),
+      GoRoute( // Add this route for the staff profile
+        path: '/staff/profile',
+        builder: (context, state) => const StaffProfileScreen(),
+      ),
+      GoRoute( // Add this route for staff book detail
+        path: '/staff/catalog/book-detail',
+        builder: (context, state) {
+          final book = state.extra as BookModel;
+          return StaffBookDetailScreen(book: book);
+        },
+      ),
+      // Staff Manage Rooms - This screen will internally use admin routes for add/edit actions
+      GoRoute(
+        path: '/staff/reserved-rooms',
+        builder: (context, state) => const staff_manage_rooms.ManageRoomsScreen(),
       ),
 
       // Student routes with shell navigation

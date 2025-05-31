@@ -37,6 +37,9 @@ class BookModel {
     int? publishedYear,
     Timestamp? dateAdded,
     String? tag,
+    String? coverUrl,
+    String? category,
+    String? description,
   }) {
     return BookModel(
       id: id ?? this.id,
@@ -47,6 +50,9 @@ class BookModel {
       publishedYear: publishedYear ?? this.publishedYear,
       dateAdded: dateAdded ?? this.dateAdded,
       tag: tag ?? this.tag,
+      coverUrl: coverUrl ?? this.coverUrl,
+      category: category ?? this.category,
+      description: description ?? this.description,
     );
   }
 
@@ -63,9 +69,10 @@ class BookModel {
       status: data?['status'] ?? 'Unknown',
       publishedYear: data?['publishedYear'] as int?,
       dateAdded: data?['dateAdded'] as Timestamp?,
-      tag:
-          data?['tag'] ??
-          'Green', // Default to 'Green' if 'tag' is not in Firestore
+      tag: data?['tag'] ?? 'Green',
+      coverUrl: data?['coverUrl'] as String?, // Added
+      category: data?['category'] as String?, // Added
+      description: data?['description'] as String?, // Added
     );
   }
 
@@ -78,6 +85,9 @@ class BookModel {
       if (publishedYear != null) 'publishedYear': publishedYear,
       if (dateAdded != null) 'dateAdded': dateAdded,
       'tag': tag,
+      if (coverUrl != null) 'coverUrl': coverUrl, // Added
+      if (category != null) 'category': category, // Added
+      if (description != null) 'description': description, // Added
     };
   }
 }

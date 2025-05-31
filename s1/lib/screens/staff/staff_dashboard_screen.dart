@@ -5,6 +5,7 @@ import '/constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import '../../services/chat_service.dart';
+import '../../screens/staff/staff_profile_screen.dart';
 
 class StaffDashboardScreen extends StatelessWidget {
   const StaffDashboardScreen({super.key});
@@ -120,22 +121,7 @@ class StaffDashboardScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.account_circle, size: 30),
             onPressed: () {
-              showDialog(
-                context: context,
-                builder:
-                    (context) => AlertDialog(
-                      title: const Text('User Profile'),
-                      content: const Text(
-                        'Welcome, Staff Member! \n(Profile page coming soon)',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Close'),
-                        ),
-                      ],
-                    ),
-              );
+              context.push('/staff/profile'); // Navigate to staff profile screen
             },
           ),
           const SizedBox(width: 8),
@@ -143,38 +129,10 @@ class StaffDashboardScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search books, users, or rooms...',
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppColors.primaryColor,
-                ),
-                filled: true,
-                fillColor: AppColors.cardBackgroundColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: const BorderSide(
-                    color: AppColors.secondaryColor,
-                    width: 2,
-                  ),
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 15.0),
-              ),
-              onChanged: (value) {
-                print('Dashboard Search query: $value');
-              },
-            ),
-          ),
+          // Removed the search bar Padding widget
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              padding: const EdgeInsets.all(12.0), // Added padding to the GridView's parent
               child: GridView.builder(
                 itemCount: dashboardItems.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
