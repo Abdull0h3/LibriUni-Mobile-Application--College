@@ -1,14 +1,16 @@
+// Made by Faisal: Updated for dark mode support in borrowed books screen.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:s1/models/book_model.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/book_model.dart';
 import '../../widgets/student_nav_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BorrowedBooksScreen extends StatefulWidget {
-  const BorrowedBooksScreen({Key? key}) : super(key: key);
+  const BorrowedBooksScreen({super.key});
 
   @override
   State<BorrowedBooksScreen> createState() => _BorrowedBooksScreenState();
@@ -123,6 +125,8 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.user?.id;
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Borrowed Books'),
@@ -131,243 +135,238 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: AppColors.error,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _error!,
-                      style: const TextStyle(color: AppColors.error),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _loadBorrowedBooks,
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              )
-              : _borrowedBooks.isEmpty
-              ? const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.book_outlined,
-                      size: 64,
-                      color: AppColors.primary,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'You have no borrowed books',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Visit the library to borrow books',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-              : ListView.builder(
-                padding: const EdgeInsets.all(16.0),
-                itemCount: _borrowedBooks.length,
-                itemBuilder: (context, index) {
-                  return _buildBorrowedBookItem(context, _borrowedBooks[index]);
-                },
-              ),
-      bottomNavigationBar: StudentNavBar(currentIndex: 0, context: context),
-    );
-  }
-
-  Widget _buildBorrowedBookItem(
-    BuildContext context,
-    BorrowedBook borrowedBook,
-  ) {
-    final book = borrowedBook.book;
-    final daysLeft =
-        borrowedBook.isOverdue
-            ? 0
-            : borrowedBook.dueDate.difference(DateTime.now()).inDays;
-    final statusColor =
-        borrowedBook.isOverdue
-            ? AppColors.error
-            : daysLeft <= 3
-            ? AppColors.warning
-            : AppColors.success;
-    final statusText =
-        borrowedBook.isOverdue
-            ? 'Overdue'
-            : daysLeft == 0
-            ? 'Due today'
-            : daysLeft == 1
-            ? '1 day left'
-            : '$daysLeft days left';
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Book cover or placeholder
-                Container(
-                  width: 80,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: AppColors.lightGray,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child:
-                      book.coverUrl != null
-                          ? ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: Image.network(
-                              book.coverUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder:
-                                  (_, __, ___) => const Icon(
-                                    Icons.book,
-                                    size: 32,
-                                    color: AppColors.primary,
-                                  ),
-                            ),
-                          )
-                          : const Icon(
-                            Icons.book,
-                            size: 32,
-                            color: AppColors.primary,
-                          ),
-                ),
-                const SizedBox(width: 16),
-                // Book info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        book.title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+      body: userId == null
+          ? const Center(child: Text('Please login to view your borrowed books'))
+          : StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('loans')
+                  .where('userId', isEqualTo: userId)
+                  .where('returnDate', isNull: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final docs = snapshot.data!.docs;
+                if (docs.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.book_outlined,
+                          size: 64,
+                          color: AppColors.primary,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'By ${book.author}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
+                        SizedBox(height: 16),
+                        Text(
+                          'You have no borrowed books',
+                          style: TextStyle(fontSize: 18),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_today,
-                            size: 14,
+                        SizedBox(height: 8),
+                        Text(
+                          'Visit the library to borrow books',
+                          style: TextStyle(
+                            fontSize: 14,
                             color: AppColors.textSecondary,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Borrowed: ${DateFormat.yMMMd().format(borrowedBook.borrowDate)}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    final bookId = data['bookId'] as String?;
+                    if (bookId == null) return const SizedBox.shrink();
+                    return FutureBuilder(
+                      future: FirebaseFirestore.instance
+                          .collection('books')
+                          .doc(bookId)
+                          .get(),
+                      builder: (context, bookSnap) {
+                        if (!bookSnap.hasData) {
+                          return const SizedBox.shrink();
+                        }
+                        final book = BookModel.fromFirestore(bookSnap.data!, null);
+                        final borrowDate = data['loanDate'] != null
+                            ? (data['loanDate'] as Timestamp).toDate()
+                            : null;
+                        final dueDate = data['dueDate'] != null
+                            ? (data['dueDate'] as Timestamp).toDate()
+                            : null;
+                        final isOverdue = dueDate != null && dueDate.isBefore(DateTime.now());
+                        final daysLeft = (dueDate != null && !isOverdue)
+                            ? dueDate.difference(DateTime.now()).inDays
+                            : 0;
+                        final statusColor = isOverdue
+                            ? AppColors.error
+                            : daysLeft <= 3
+                                ? AppColors.warning
+                                : AppColors.success;
+                        final statusText = isOverdue
+                            ? 'Overdue'
+                            : daysLeft == 0
+                                ? 'Due today'
+                                : daysLeft == 1
+                                    ? '1 day left'
+                                    : '$daysLeft days left';
+                        double rate = 1;
+                        if (book.tag == 'yellow') rate = 3;
+                        if (book.tag == 'red') rate = 5;
+                        final fine = isOverdue && dueDate != null
+                            ? DateTime.now().difference(dueDate).inDays * rate
+                            : 0;
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 16.0),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Book cover or placeholder
+                                    Container(
+                                      width: 80,
+                                      height: 120,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.lightGray,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: book.coverUrl != null
+                                          ? ClipRRect(
+                                              borderRadius: BorderRadius.circular(4),
+                                              child: Image.network(
+                                                book.coverUrl!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) => const Icon(
+                                                  Icons.book,
+                                                  size: 32,
+                                                  color: AppColors.primary,
+                                                ),
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.book,
+                                              size: 32,
+                                              color: AppColors.primary,
+                                            ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    // Book info
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            book.title,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'By ${book.author}',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          if (borrowDate != null)
+                                            Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.calendar_today,
+                                                  size: 14,
+                                                  color: AppColors.textSecondary,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Borrowed: ${DateFormat.yMMMd().format(borrowDate)}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: AppColors.textSecondary,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          const SizedBox(height: 4),
+                                          if (dueDate != null)
+                                            Row(
+                                              children: [
+                                                Icon(Icons.event, size: 14, color: statusColor),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Due: ${DateFormat.yMMMd().format(dueDate)}',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: statusColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: statusColor.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text(
+                                                    statusText,
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: statusColor,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          if (isOverdue && fine > 0) ...[
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.warning, color: AppColors.error, size: 16),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Fine: $fine',
+                                                  style: const TextStyle(
+                                                    color: AppColors.error,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.event, size: 14, color: statusColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Due: ${DateFormat.yMMMd().format(borrowedBook.dueDate)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: statusColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              statusText,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: statusColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                        );
+                      },
+                    );
+                  },
+                );
+              },
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () => _returnBook(borrowedBook),
-                  icon: const Icon(Icons.assignment_return, size: 16),
-                  label: const Text('Return'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed:
-                      borrowedBook.isOverdue
-                          ? null
-                          : () => _renewBook(borrowedBook),
-                  icon: const Icon(Icons.refresh, size: 16),
-                  label: const Text('Renew'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: AppColors.white,
-                    backgroundColor: AppColors.primary,
-                    disabledBackgroundColor: AppColors.disabledBackground,
-                    disabledForegroundColor: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: StudentNavBar(currentIndex: 0, context: context),
     );
   }
 }

@@ -1,9 +1,13 @@
+// Made by Faisal: Updated for dark mode support and unified navigation bar for student dashboard.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../staff/news_and_events_screen.dart';
+import '../staff/news_item_detail_screen.dart';
+import '../../widgets/student_nav_bar.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -61,26 +65,61 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             child: IconButton(
               icon: const Icon(Icons.notifications),
               onPressed: () {
-                context.push('/student/notifications');
+                // Navigate to news and events list when notification icon is pressed
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => NewsAndEventsScreen(),
+                  ),
+                );
               },
             ),
           ),
-          // Replaced PopupMenuButton with IconButton for direct navigation
-          IconButton(
+          PopupMenuButton<String>(
             icon: CircleAvatar(
               radius: 16,
-              backgroundColor: AppColors.secondary, // Assuming AppColors.secondary is defined
+              backgroundColor: AppColors.secondary,
               child: Text(
                 userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
-                style: const TextStyle(color: AppColors.white), // Assuming AppColors.white is defined
+                style: const TextStyle(color: AppColors.white),
               ),
             ),
-            tooltip: 'Profile Settings', // Added tooltip for clarity
-            onPressed: () {
-              context.push('/student/profile'); // Navigate directly to profile
+            offset: const Offset(0, 40),
+            onSelected: (value) {
+              switch (value) {
+                case 'profile':
+                  context.push('/student/profile');
+                  break;
+                case 'logout':
+                  authProvider.signOut();
+                  break;
+              }
             },
+            itemBuilder:
+                (context) => [
+                  const PopupMenuItem(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person_outline),
+                        SizedBox(width: 8),
+                        Text('Profile'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout),
+                        SizedBox(width: 8),
+                        Text('Logout'),
+                      ],
+                    ),
+                  ),
+                ],
           ),
-          const SizedBox(width: 16), // Keep consistent spacing
+          const SizedBox(width: 16),
         ],
       ),
       body: Padding(
@@ -88,18 +127,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search books, journals, or rooms...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(height: 24),
             Expanded(
               child: GridView.count(
@@ -135,66 +162,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               title: 'Reminders',
               content: '2 books due in 3 days',
               color: AppColors.warning,
+              onTap: () => context.push('/student/reminders'),
             ),
             const SizedBox(height: 16),
-            _buildInfoCard(
-              icon: Icons.announcement,
-              title: 'Announcements',
-              content: 'Discussion room renovation notice',
-              color: AppColors.info,
-            ),
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          // setState(() => _currentIndex = index); // Handled by didChangeDependencies on route change
-          switch (index) {
-            case 0:
-              // Only navigate if not already on the base student dashboard
-              if ((GoRouterState.of(context).fullPath ?? '/student') != '/student') {
-                context.go('/student');
-              }
-              break;
-            case 1:
-              final user = authProvider.user;
-              if (user != null) {
-                // Check if already on the chat screen to avoid pushing multiple times if desired
-                // For now, it pushes, which is fine.
-                context.push(
-                  '/student/chat',
-                  extra: {'studentId': user.id, 'studentName': user.name},
-                );
-              }
-              break;
-            case 2:
-              // Only navigate if not already on the profile screen
-              if (! (GoRouterState.of(context).fullPath?.startsWith('/student/profile') ?? false) ) {
-                context.go('/student/profile');
-              }
-              break;
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            tooltip: 'Chat with Library Staff',
-            icon: Icon(Icons.support_agent_outlined),
-            selectedIcon: Icon(Icons.support_agent),
-            label: 'Staff Help',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
+      bottomNavigationBar: StudentNavBar(currentIndex: _currentIndex, context: context),
     );
   }
 
@@ -203,6 +177,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     required String title,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -212,12 +187,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: AppColors.primary),
+            Icon(icon, size: 48, color: isDark ? AppColors.yellow : AppColors.primary),
             const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isDark ? AppColors.white : AppColors.textPrimary,
+              ),
             ),
           ],
         ),
@@ -230,13 +209,26 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     required String title,
     required String content,
     required Color color,
+    VoidCallback? onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       child: ListTile(
-        leading: Icon(icon, color: color),
-        title: Text(title),
-        subtitle: Text(content),
-        trailing: const Icon(Icons.chevron_right),
+        leading: Icon(icon, color: isDark ? AppColors.yellow : color),
+        title: Text(title, style: TextStyle(color: isDark ? AppColors.white : AppColors.textPrimary)),
+        subtitle: Text(content, style: TextStyle(color: isDark ? AppColors.white : AppColors.textSecondary)),
+        trailing: Icon(Icons.chevron_right, color: isDark ? AppColors.white : AppColors.textPrimary),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  // Example function to navigate to a specific news item detail (call this from notification tap if you have newsItem)
+  void _openNewsItemDetail(BuildContext context, dynamic newsItem) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NewsItemDetailScreen(newsItem: newsItem),
       ),
     );
   }

@@ -29,24 +29,29 @@ class StudentNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final selectedIconColor = isDark ? const Color(0xFFF4B400) : const Color(0xFF1A365D);
+    final unselectedIconColor = isDark ? Colors.white : const Color(0xFF1A365D);
+    final selectedIconInnerColor = isDark ? const Color(0xFF1A365D) : Colors.white;
     return NavigationBar(
       selectedIndex: currentIndex,
       onDestinationSelected: _onDestinationSelected,
-      destinations: const [
+      indicatorColor: selectedIconColor,
+      destinations: [
         NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
+          icon: Icon(Icons.home_outlined, color: unselectedIconColor),
+          selectedIcon: Icon(Icons.home, color: selectedIconInnerColor),
           label: 'Home',
         ),
         NavigationDestination(
           tooltip: 'Chat with Library Staff',
-          icon: Icon(Icons.support_agent_outlined),
-          selectedIcon: Icon(Icons.support_agent),
+          icon: Icon(Icons.support_agent_outlined, color: unselectedIconColor),
+          selectedIcon: Icon(Icons.support_agent, color: selectedIconInnerColor),
           label: 'Staff Help',
         ),
         NavigationDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings),
+          icon: Icon(Icons.settings_outlined, color: unselectedIconColor),
+          selectedIcon: Icon(Icons.settings, color: selectedIconInnerColor),
           label: 'Settings',
         ),
       ],

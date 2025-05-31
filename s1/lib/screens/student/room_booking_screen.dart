@@ -65,6 +65,7 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark; // <-- Add this line
     final roomProvider = Provider.of<RoomProvider>(context);
     final rooms = roomProvider.rooms;
     return Scaffold(
@@ -81,7 +82,7 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
           Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: isDark ? const Color(0xFF222222) : AppColors.white, // <-- updated
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -93,9 +94,13 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Select Date',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : AppColors.textPrimary, // <-- updated
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -111,16 +116,20 @@ class _RoomBookingScreenState extends State<RoomBookingScreen> {
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(8),
+                            color: isDark ? const Color(0xFF222222) : Colors.white, // <-- updated
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.calendar_today, size: 20),
+                              Icon(Icons.calendar_today, size: 20, color: isDark ? Colors.white : AppColors.textPrimary), // <-- updated
                               const SizedBox(width: 8),
                               Text(
                                 DateFormat(
                                   'MMM dd, yyyy',
                                 ).format(_selectedDate),
-                                style: const TextStyle(fontSize: 14),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark ? Colors.white : AppColors.textPrimary, // <-- updated
+                                ),
                               ),
                             ],
                           ),

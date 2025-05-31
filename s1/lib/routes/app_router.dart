@@ -15,6 +15,7 @@ import '../screens/student/profile_screen.dart';
 import '../screens/student/notifications_screen.dart';
 import '../screens/student/my_reserved_rooms_screen.dart';
 import '../screens/student/student_chat_screen.dart';
+import '../screens/student/reminders_screen.dart'; // <-- Added import
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/manage_users_screen.dart';
 import '../screens/admin/manage_rooms_screen.dart';
@@ -42,7 +43,6 @@ import '../screens/staff/staff_profile_screen.dart';//NEW
 import '../screens/staff/staff_book_detail_screen.dart';//NEW
 import '../screens/staff/manage_rooms_screen.dart' as staff_manage_rooms; // Alias for staff screen
 import '../models/room.dart'; // Ensure Room model is imported
-
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -251,6 +251,10 @@ class AppRouter {
                 studentName: studentName,
               );
             },
+          ),
+          GoRoute(
+            path: '/student/reminders', // <-- Added route
+            builder: (context, state) => const RemindersScreen(),
           ),
         ],
       ),

@@ -47,6 +47,7 @@ class NewsItemDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final typeColor = _getTypeColor(newsItem.type);
     final typeIcon = _getTypeIcon(newsItem.type);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -76,10 +77,10 @@ class NewsItemDetailScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               newsItem.title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColorDark,
+                color: isDark ? Colors.white : AppColors.textColorDark,
               ),
             ),
             if (newsItem.miniNote != null && newsItem.miniNote!.isNotEmpty) ...[
@@ -89,7 +90,7 @@ class NewsItemDetailScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontStyle: FontStyle.italic,
-                  color: AppColors.textColorDark.withOpacity(0.75),
+                  color: isDark ? Colors.white70 : AppColors.textColorDark.withOpacity(0.75),
                 ),
               ),
             ],
@@ -100,7 +101,7 @@ class NewsItemDetailScreen extends StatelessWidget {
               newsItem.fullDetails,
               style: TextStyle(
                 fontSize: 16,
-                color: AppColors.textColorDark.withOpacity(0.9),
+                color: isDark ? Colors.white : AppColors.textColorDark.withOpacity(0.9),
                 height: 1.5,
               ),
             ),
@@ -111,13 +112,15 @@ class NewsItemDetailScreen extends StatelessWidget {
               'Priority:',
               newsItem.priority.toString().split('.').last.toUpperCase(),
               valueColor: _getPriorityColor(newsItem.priority),
-            ), // Changed 'color' to 'valueColor'
+              isDark: isDark,
+            ),
             if (newsItem.eventDate != null)
               _buildInfoRow(
                 'Event Date:',
                 _formatTimestamp(newsItem.eventDate, format: 'MMMM dd, yyyy'),
+                isDark: isDark,
               ),
-            _buildInfoRow('Posted:', _formatTimestamp(newsItem.postedDate)),
+            _buildInfoRow('Posted:', _formatTimestamp(newsItem.postedDate), isDark: isDark),
           ],
         ),
       ),
@@ -137,7 +140,7 @@ class NewsItemDetailScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildInfoRow(String label, String value, {Color? valueColor}) {
+  Widget _buildInfoRow(String label, String value, {Color? valueColor, bool isDark = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
@@ -145,10 +148,10 @@ class NewsItemDetailScreen extends StatelessWidget {
         children: [
           Text(
             '$label ',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: AppColors.textColorDark,
+              color: isDark ? Colors.white : AppColors.textColorDark,
             ),
           ),
           Expanded(
@@ -156,7 +159,7 @@ class NewsItemDetailScreen extends StatelessWidget {
               value,
               style: TextStyle(
                 fontSize: 15,
-                color: valueColor ?? AppColors.textColorDark.withOpacity(0.85),
+                color: valueColor ?? (isDark ? Colors.white : AppColors.textColorDark.withOpacity(0.85)),
               ),
             ),
           ),

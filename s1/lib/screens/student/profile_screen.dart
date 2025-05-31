@@ -4,9 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/student_nav_bar.dart';
+import '../staff/news_and_events_screen.dart';
+import '../../providers/theme_provider.dart';
 
+// Made by Faisal: Updated for dark mode support and added theme toggle in student profile.
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -84,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = authProvider.user;
     final isLoading = _isLoading || authProvider.isLoading;
 
-    Future<void> _navigateToEditProfile() async {
+    Future<void> navigateToEditProfile() async {
       await Navigator.of(context).pushNamed('/edit-profile');
       // Refresh user data after returning from edit profile
       if (user != null) {
@@ -124,8 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ? ClipRRect(
                                     borderRadius: BorderRadius.circular(50),
                                     child: Image.network(
-                                      user.profilePictureUrl! +
-                                          '?v=${DateTime.now().millisecondsSinceEpoch}',
+                                      '${user.profilePictureUrl!}?v=${DateTime.now().millisecondsSinceEpoch}',
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.cover,
@@ -211,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   leading: const Icon(Icons.edit),
                                   title: const Text('Edit Profile'),
                                   onTap:
-                                      isLoading ? null : _navigateToEditProfile,
+                                      isLoading ? null : navigateToEditProfile,
                                 ),
                                 _buildActionButton(
                                   'Change Password',
@@ -226,8 +228,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   isLoading
                                       ? null
                                       : () {
-                                        // TODO: Navigate to notifications settings
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => NewsAndEventsScreen(),
+                                          ),
+                                        );
                                       },
+                                ),
+                                // Dark mode toggle
+                                Consumer<ThemeProvider>(
+                                  builder: (context, themeProvider, _) {
+                                    return SwitchListTile(
+                                      title: const Text('Dark Mode'),
+                                      secondary: Icon(
+                                        themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                                        color: themeProvider.isDarkMode ? AppColors.warning : AppColors.primary,
+                                      ),
+                                      value: themeProvider.isDarkMode,
+                                      onChanged: (value) {
+                                        themeProvider.setDarkMode(value);
+                                      },
+                                    );
+                                  },
                                 ),
                                 _buildActionButton(
                                   'Logout',
@@ -284,10 +307,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     VoidCallback? onTap, {
     Color color = AppColors.textPrimary,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isLogout = color == AppColors.error;
+    final iconColor = isLogout ? AppColors.error : (isDark ? AppColors.white : color);
+    final textColor = isLogout ? AppColors.error : (isDark ? AppColors.white : color);
     return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(text, style: TextStyle(color: color)),
-      trailing: const Icon(Icons.chevron_right),
+      leading: Icon(icon, color: iconColor),
+      title: Text(text, style: TextStyle(color: textColor)),
+      trailing: Icon(Icons.chevron_right, color: textColor),
       onTap: onTap,
     );
   }

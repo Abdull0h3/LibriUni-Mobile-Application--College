@@ -17,6 +17,8 @@ class AppTheme {
       onError: AppColors.white,
       surface: AppColors.white,
       onSurface: AppColors.textPrimary,
+      background: AppColors.background,
+      onBackground: AppColors.textPrimary,
     ),
     scaffoldBackgroundColor: AppColors.background,
     appBarTheme: const AppBarTheme(
@@ -69,6 +71,16 @@ class AppTheme {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
+    // Added for dark mode support
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: AppColors.textPrimary),
+      bodyMedium: TextStyle(color: AppColors.textPrimary),
+      titleLarge: TextStyle(color: AppColors.textPrimary),
+      titleMedium: TextStyle(color: AppColors.textPrimary),
+    ),
+    iconTheme: const IconThemeData(
+      color: AppColors.textPrimary,
+    ),
   );
 
   static ThemeData get dark => ThemeData(
@@ -83,6 +95,8 @@ class AppTheme {
       onError: AppColors.white,
       surface: Color(0xFF1E1E1E),
       onSurface: AppColors.white,
+      background: Color(0xFF121212),
+      onBackground: AppColors.white,
     ),
     scaffoldBackgroundColor: const Color(0xFF121212),
     appBarTheme: const AppBarTheme(
@@ -134,6 +148,26 @@ class AppTheme {
       color: const Color(0xFF1E1E1E),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    ),
+    // Added for dark mode support
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: AppColors.white),
+      bodyMedium: TextStyle(color: AppColors.white),
+      titleLarge: TextStyle(color: AppColors.white),
+      titleMedium: TextStyle(color: AppColors.white),
+    ),
+    iconTheme: const IconThemeData(
+      color: AppColors.white,
+    ),
+    // Added for dark mode support
+    dividerTheme: const DividerThemeData(
+      color: Color(0xFF333333),
+    ),
+    // Added for dark mode support
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Color(0xFF1E1E1E),
+      selectedItemColor: AppColors.secondary,
+      unselectedItemColor: AppColors.lightGray,
     ),
   );
 }
