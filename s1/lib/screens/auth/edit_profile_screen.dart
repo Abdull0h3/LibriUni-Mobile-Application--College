@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
@@ -21,10 +18,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _departmentController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
-  File? _imageFile;
-  String? _imageUrl;
 
   @override
   void initState() {
@@ -39,7 +33,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _nameController.text = user.name;
       _phoneController.text = user.phone ?? '';
       _departmentController.text = user.department ?? '';
-      _imageUrl = user.profilePictureUrl;
     }
   }
 
@@ -49,57 +42,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _phoneController.dispose();
     _departmentController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 85,
-      );
-
-      if (pickedFile != null) {
-        setState(() {
-          _imageFile = File(pickedFile.path);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to pick image: $e')));
-      }
-    }
-  }
-
-  Future<String?> _uploadImage() async {
-    if (_imageFile == null) return _imageUrl;
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final user = authProvider.user;
-      if (user == null) return null;
-
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('profile_pictures')
-          .child('${user.id}.jpg');
-
-      // Upload the file
-      await storageRef.putFile(_imageFile!);
-
-      // Get the download URL
-      return await storageRef.getDownloadURL();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
-      }
-      return null;
-    }
   }
 
   Future<void> _updateProfile() async {
@@ -116,9 +58,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     try {
-      // Upload image if selected
-      final newImageUrl = await _uploadImage();
-
       final updatedUser = currentUser.copyWith(
         name: _nameController.text.trim(),
         phone:
@@ -129,7 +68,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _departmentController.text.trim().isEmpty
                 ? null
                 : _departmentController.text.trim(),
-        profilePictureUrl: newImageUrl,
       );
 
       final success = await authProvider.updateProfile(updatedUser);
@@ -177,57 +115,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     CircleAvatar(
                       radius: 60,
                       backgroundColor: AppColors.primary.withOpacity(0.2),
-                      child:
-                          _imageFile != null
-                              ? ClipRRect(
-                                borderRadius: BorderRadius.circular(60),
-                                child: Image.file(
-                                  _imageFile!,
-                                  width: 120,
-                                  height: 120,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                              : _imageUrl != null
-                              ? ClipRRect(
-                                borderRadius: BorderRadius.circular(60),
-                                child: Image.network(
-                                  _imageUrl!,
-                                  width: 120,
-                                  height: 120,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(
-                                      Icons.person,
-                                      size: 60,
-                                      color: AppColors.primary,
-                                    );
-                                  },
-                                ),
-                              )
-                              : const Icon(
-                                Icons.person,
-                                size: 60,
-                                color: AppColors.primary,
-                              ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.camera_alt,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          onPressed: _isLoading ? null : _pickImage,
-                        ),
+                      child: const Icon(
+                        Icons.person,
+                        size: 60,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],

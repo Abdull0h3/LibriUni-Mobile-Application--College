@@ -2,12 +2,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '/constants/app_colors.dart';
+import '../../providers/auth_provider.dart';
+import 'package:provider/provider.dart';
+import '../../services/chat_service.dart';
 
 class StaffDashboardScreen extends StatelessWidget {
   const StaffDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userName = authProvider.user?.name ?? 'Staff';
+    final staffId = authProvider.user?.id ?? '';
+
     // Define the dashboard items
     final List<DashboardItem> dashboardItems = [
       DashboardItem(
@@ -77,6 +84,39 @@ class StaffDashboardScreen extends StatelessWidget {
           ],
         ),
         actions: [
+          // Message Icon
+          StreamBuilder<int>(
+            stream:
+                staffId.isNotEmpty
+                    ? ChatService().getTotalUnreadMessageCount(staffId)
+                    : null,
+            builder: (context, snapshot) {
+              final totalUnreadCount = snapshot.data ?? 0;
+              return IconButton(
+                // Show a different icon if there are unread messages
+                icon: Icon(
+                  totalUnreadCount > 0
+                      ? Icons
+                          .mark_email_unread // Icon with exclamation mark
+                      : Icons.message_outlined, // Regular message icon
+                  size: 24, // Standard icon size
+                  color:
+                      totalUnreadCount > 0
+                          ? AppColors.secondaryColor
+                          : Colors.white, // Highlight if unread
+                ),
+                tooltip: 'Student Chats',
+                onPressed: () {
+                  if (staffId.isNotEmpty) {
+                    context.push(
+                      '/staff/chat',
+                      extra: {'staffId': staffId, 'staffName': userName},
+                    );
+                  }
+                },
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.account_circle, size: 30),
             onPressed: () {

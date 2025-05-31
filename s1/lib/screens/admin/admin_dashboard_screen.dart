@@ -225,71 +225,78 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ],
                       ),
                       const SizedBox(height: 32),
-                      // Book availability chart
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Book Availability',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              SizedBox(
-                                height: 200,
-                                child: PieChart(
-                                  PieChartData(
-                                    sections: [
-                                      PieChartSectionData(
-                                        color: AppColors.success,
-                                        value: _availableBooks.toDouble(),
-                                        title: 'Available',
-                                        radius: 80,
-                                        titleStyle: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      PieChartSectionData(
-                                        color: AppColors.error,
-                                        value:
-                                            (_totalBooks - _availableBooks)
-                                                .toDouble(),
-                                        title: 'Borrowed',
-                                        radius: 80,
-                                        titleStyle: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                    sectionsSpace: 0,
-                                    centerSpaceRadius: 40,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildLegendItem(
-                                    'Available',
-                                    AppColors.success,
-                                  ),
-                                  const SizedBox(width: 24),
-                                  _buildLegendItem('Borrowed', AppColors.error),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                      // Add Manage News action card
+                      _buildActionCard(
+                        'Manage News',
+                        Icons.article,
+                        () => context.push('/admin/news'),
                       ),
                       const SizedBox(height: 24),
+                      // Book availability chart (moved to AnalyticsScreen)
+                      // Card(
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.all(16.0),
+                      //     child: Column(
+                      //       crossAxisAlignment: CrossAxisAlignment.start,
+                      //       children: [
+                      //         const Text(
+                      //           'Book Availability',
+                      //           style: TextStyle(
+                      //             fontSize: 18,
+                      //             fontWeight: FontWeight.bold,
+                      //           ),
+                      //         ),
+                      //         const SizedBox(height: 24),
+                      //         SizedBox(
+                      //           height: 200,
+                      //           child: PieChart(
+                      //             PieChartData(
+                      //               sections: [
+                      //                 PieChartSectionData(
+                      //                   color: AppColors.success,
+                      //                   value: _availableBooks.toDouble(),
+                      //                   title: 'Available',
+                      //                   radius: 80,
+                      //                   titleStyle: const TextStyle(
+                      //                     color: Colors.white,
+                      //                     fontWeight: FontWeight.bold,
+                      //                   ),
+                      //                 ),
+                      //                 PieChartSectionData(
+                      //                   color: AppColors.error,
+                      //                   value:
+                      //                       (_totalBooks - _availableBooks)
+                      //                           .toDouble(),
+                      //                   title: 'Borrowed',
+                      //                   radius: 80,
+                      //                   titleStyle: const TextStyle(
+                      //                     color: Colors.white,
+                      //                     fontWeight: FontWeight.bold,
+                      //                   ),
+                      //                 ),
+                      //               ],
+                      //               sectionsSpace: 0,
+                      //               centerSpaceRadius: 40,
+                      //             ),
+                      //           ),
+                      //         ),
+                      //         const SizedBox(height: 16),
+                      //         Row(
+                      //           mainAxisAlignment: MainAxisAlignment.center,
+                      //           children: [
+                      //             _buildLegendItem(
+                      //               'Available',
+                      //               AppColors.success,
+                      //             ),
+                      //             const SizedBox(width: 24),
+                      //             _buildLegendItem('Borrowed', AppColors.error),
+                      //           ],
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 24),
                     ],
                   ),
                 ),

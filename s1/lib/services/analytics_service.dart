@@ -169,40 +169,60 @@ class AnalyticsService {
       );
       final DateTime monthStart = DateTime(now.year, now.month, 1);
 
-      // Initialize result maps
+      // Initialize result maps with days of the week
       final Map<String, Map<String, int>> result = {
-        'Today': {},
-        'This Week': {},
-        'This Month': {},
-        'All Time': {},
+        'Today': {'Today': 0},
+        'This Week': {
+          'Monday': 0,
+          'Tuesday': 0,
+          'Wednesday': 0,
+          'Thursday': 0,
+          'Friday': 0,
+          'Saturday': 0,
+          'Sunday': 0,
+        },
+        'This Month': {'Week 1': 0, 'Week 2': 0, 'Week 3': 0, 'Week 4': 0},
+        'All Time': {
+          'Monday': 0,
+          'Tuesday': 0,
+          'Wednesday': 0,
+          'Thursday': 0,
+          'Friday': 0,
+          'Saturday': 0,
+          'Sunday': 0,
+        },
       };
 
       // Process each room booking document
       for (var doc in docs) {
         final data = doc.data() as Map<String, dynamic>;
-        final DateTime bookingDate =
-            (data['bookingDate'] as Timestamp).toDate();
-        final String roomName = data['roomName'] ?? 'Unknown Room';
+        final DateTime bookingDate = (data['startTime'] as Timestamp).toDate();
 
         // Update for all time
-        result['All Time']![roomName] =
-            (result['All Time']![roomName] ?? 0) + 1;
+        final String dayOfWeek = _getDayName(bookingDate.weekday);
+        result['All Time']![dayOfWeek] =
+            (result['All Time']![dayOfWeek] ?? 0) + 1;
 
         // Update for this month
         if (bookingDate.isAfter(monthStart)) {
-          result['This Month']![roomName] =
-              (result['This Month']![roomName] ?? 0) + 1;
+          final int weekOfMonth = (bookingDate.day - 1) ~/ 7;
+          final String weekKey = 'Week ${weekOfMonth + 1}';
+          if (result['This Month']!.containsKey(weekKey)) {
+            result['This Month']![weekKey] =
+                (result['This Month']![weekKey] ?? 0) + 1;
+          }
         }
 
         // Update for this week
         if (bookingDate.isAfter(weekStart)) {
-          result['This Week']![roomName] =
-              (result['This Week']![roomName] ?? 0) + 1;
+          final String dayName = _getDayName(bookingDate.weekday);
+          result['This Week']![dayName] =
+              (result['This Week']![dayName] ?? 0) + 1;
         }
 
         // Update for today
         if (bookingDate.isAfter(todayStart)) {
-          result['Today']![roomName] = (result['Today']![roomName] ?? 0) + 1;
+          result['Today']!['Today'] = (result['Today']!['Today'] ?? 0) + 1;
         }
       }
 
@@ -210,11 +230,48 @@ class AnalyticsService {
     } catch (e) {
       print('Error fetching room usage: $e');
       return {
-        'Today': {'Room A': 0, 'Room B': 0, 'Room C': 0, 'Room D': 0},
-        'This Week': {'Room A': 0, 'Room B': 0, 'Room C': 0, 'Room D': 0},
-        'This Month': {'Room A': 0, 'Room B': 0, 'Room C': 0, 'Room D': 0},
-        'All Time': {'Room A': 0, 'Room B': 0, 'Room C': 0, 'Room D': 0},
+        'Today': {'Today': 0},
+        'This Week': {
+          'Monday': 0,
+          'Tuesday': 0,
+          'Wednesday': 0,
+          'Thursday': 0,
+          'Friday': 0,
+          'Saturday': 0,
+          'Sunday': 0,
+        },
+        'This Month': {'Week 1': 0, 'Week 2': 0, 'Week 3': 0, 'Week 4': 0},
+        'All Time': {
+          'Monday': 0,
+          'Tuesday': 0,
+          'Wednesday': 0,
+          'Thursday': 0,
+          'Friday': 0,
+          'Saturday': 0,
+          'Sunday': 0,
+        },
       };
+    }
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      case 7:
+        return 'Sunday';
+      default:
+        return 'Unknown';
     }
   }
 
@@ -309,6 +366,89 @@ class AnalyticsService {
         'adminCount': 0,
         'activeBorrows': 0,
       };
+    }
+  }
+
+  // Get total reserved slots
+  Future<int> getReservedSlotsCount() async {
+    try {
+      final QuerySnapshot snapshot =
+          await _firestore
+              .collectionGroup(
+                'slots',
+              ) // Use collectionGroup to query nested slots
+              .where('isReserved', isEqualTo: true)
+              .get();
+      return snapshot.size;
+    } catch (e) {
+      print('Error fetching reserved slots count: $e');
+      return 0;
+    }
+  }
+
+  // Get fines statistics (paid and unpaid)
+  Future<Map<String, dynamic>> getFinesStats({
+    String timePeriod = 'All Time',
+  }) async {
+    try {
+      DateTime now = DateTime.now();
+      DateTime startDate;
+
+      switch (timePeriod) {
+        case 'Today':
+          startDate = DateTime(now.year, now.month, now.day);
+          break;
+        case 'This Week':
+          startDate = now.subtract(Duration(days: now.weekday - 1));
+          break;
+        case 'This Month':
+          startDate = DateTime(now.year, now.month, 1);
+          break;
+        case 'All Time':
+        default:
+          startDate = DateTime.fromMillisecondsSinceEpoch(0); // Start of epoch
+          break;
+      }
+
+      Query query = _firestore.collection('fines');
+
+      if (timePeriod != 'All Time') {
+        // Assuming 'createdDate' or 'paidDate' exists and is a Timestamp
+        // You might need to adjust the field name based on your Firestore structure
+        query = query.where('paidDate', isGreaterThanOrEqualTo: startDate);
+      }
+
+      final QuerySnapshot snapshot = await query.get();
+
+      int paidCount = 0;
+      int unpaidCount = 0;
+      double paidAmount = 0.0;
+      double unpaidAmount = 0.0;
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final String status = data['status'] ?? 'Unpaid';
+        final double fineAmount =
+            (data['fineAmount'] as num?)?.toDouble() ?? 0.0;
+
+        if (status == 'Paid') {
+          paidCount++;
+          paidAmount += fineAmount;
+        } else {
+          unpaidCount++;
+          unpaidAmount += fineAmount;
+        }
+      }
+
+      return {
+        'paid': paidCount,
+        'unpaid': unpaidCount,
+        'paidAmount': paidAmount,
+        'unpaidAmount': unpaidAmount,
+      };
+    } catch (e) {
+      print('Error fetching fines stats: $e');
+      return {'paid': 0, 'unpaid': 0, 'paidAmount': 0.0, 'unpaidAmount': 0.0};
     }
   }
 }

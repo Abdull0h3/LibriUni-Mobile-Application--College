@@ -187,7 +187,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               }
               break;
             case 1:
-              context.go('/student/ai-chat');
+              final user = authProvider.user;
+              if (user != null) {
+                context.push(
+                  '/student/chat',
+                  extra: {'studentId': user.id, 'studentName': user.name},
+                );
+              }
               break;
             case 2:
               context.go('/student/profile');

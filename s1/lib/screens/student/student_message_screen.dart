@@ -44,11 +44,25 @@ class _StudentChatScreenState extends State<StudentChatScreen> {
 
   void _sendMessage() async {
     if (_messageController.text.trim().isNotEmpty) {
-      // Send message to the student's chat thread
+      // >>> IMPORTANT: REPLACE THIS WITH THE ACTUAL FIREBASE USER UID OF A STAFF MEMBER <<<
+      // This is the staff member who will receive general student inquiries from this screen.
+      final staffReceiverId = 'y2GY7v4Xp5fEnnQmHFw11sk3U4a2';
+      // You can get this UID from your Firebase Authentication console.
+
+      // Consider adding a check here to ensure staffReceiverId is not the placeholder before sending
+      if (staffReceiverId == 'REPLACE_WITH_REAL_STAFF_USER_ID') {
+        print(
+          "WARNING: Staff receiver ID placeholder not replaced in StudentMessageScreen._sendMessage. Messages may not be routed correctly.",
+        );
+        // Optionally, prevent message sending until a real ID is provided
+        // return;
+      }
+
       await _chatService.sendStudentMessage(
-        studentId: widget.studentId,
+        studentId: widget.studentId, // The chat thread ID (student's own ID)
         senderId: widget.studentId,
         message: _messageController.text.trim(),
+        receiverId: staffReceiverId, // Pass the determined staff ID as receiver
       );
       _messageController.clear();
       _scrollToBottom();

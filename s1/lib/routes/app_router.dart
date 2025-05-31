@@ -14,7 +14,7 @@ import '../screens/student/borrowed_books_screen.dart';
 import '../screens/student/profile_screen.dart';
 import '../screens/student/notifications_screen.dart';
 import '../screens/student/my_reserved_rooms_screen.dart';
-import '../screens/student/ai_chat_screen.dart';
+import '../screens/student/student_chat_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/manage_users_screen.dart';
 import '../screens/admin/manage_rooms_screen.dart';
@@ -22,6 +22,7 @@ import '../screens/admin/analytics_screen.dart';
 import '../screens/admin/add_user_screen.dart';
 import '../screens/admin/add_room_screen.dart';
 import '../screens/admin/admin_profile_screen.dart';
+import '../screens/admin/manage_news_screen.dart';
 import '/models/book_model.dart';
 import '/screens/staff/staff_dashboard_screen.dart';
 import '/screens/staff/search_catalog_screen.dart';
@@ -35,6 +36,8 @@ import '/screens/staff/scan_qr_screen.dart';
 import '/screens/staff/borrowed_items_screen.dart';
 import '/screens/staff/manage_fines_screen.dart';
 import '/screens/staff/loan_form_screen.dart';
+import '../screens/staff/staff_chat_screen.dart';
+import '../screens/staff/staff_student_chat_detail_screen.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -148,6 +151,30 @@ class AppRouter {
           return LoanFormScreen(book: book);
         },
       ),
+      GoRoute(
+        path: '/staff/chat',
+        builder: (context, state) {
+          // Extract the map from the extra object
+          final args = state.extra as Map<String, dynamic>;
+          final staffId = args['staffId'] as String;
+          final staffName = args['staffName'] as String;
+          return StaffChatScreen(staffId: staffId, staffName: staffName);
+        },
+      ),
+      GoRoute(
+        path: '/staff/chat/student-detail',
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>;
+          final studentId = args['studentId'] as String;
+          final staffId = args['staffId'] as String;
+          final studentName = args['studentName'] as String;
+          return StaffStudentChatDetailScreen(
+            studentId: studentId,
+            staffId: staffId,
+            studentName: studentName,
+          );
+        },
+      ),
 
       // Student routes with shell navigation
       ShellRoute(
@@ -192,8 +219,17 @@ class AppRouter {
             builder: (context, state) => const MyReservedRoomsScreen(),
           ),
           GoRoute(
-            path: '/student/ai-chat',
-            builder: (context, state) => const AIChatScreen(),
+            path: '/student/chat',
+            builder: (context, state) {
+              // Extract the map from the extra object
+              final args = state.extra as Map<String, dynamic>;
+              final studentId = args['studentId'] as String;
+              final studentName = args['studentName'] as String;
+              return StudentChatScreen(
+                studentId: studentId,
+                studentName: studentName,
+              );
+            },
           ),
         ],
       ),
@@ -218,6 +254,10 @@ class AppRouter {
       GoRoute(
         path: '/admin/analytics',
         builder: (context, state) => const AnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/news',
+        builder: (context, state) => const ManageNewsScreen(),
       ),
       GoRoute(
         path: '/admin/profile',
