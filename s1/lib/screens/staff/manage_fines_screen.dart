@@ -10,12 +10,13 @@ import '/models/loan_model.dart';
 import '/models/book_model.dart';
 import '/models/user_model.dart';
 // The FineDetailModel is now for UI display, enriched from FineModel
-import '/models/fine_detail_model.dart';
+import '/models/fine_detail_model.dart'; 
 
 import '/services/fine_service.dart';
 import '/services/loan_service.dart';
 import '/services/book_service.dart';
 import '/services/user_service.dart';
+
 
 class ManageFinesScreen extends StatefulWidget {
   const ManageFinesScreen({super.key});
@@ -38,11 +39,10 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
   String _errorMessage = '';
 
   StreamSubscription? _finesSubscription;
-  final NumberFormat _currencyFormat = NumberFormat.currency(
-    locale: 'en_US',
-    symbol: '\$',
-  );
+  final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'en_US', symbol: '\$');
   final TextEditingController _searchController = TextEditingController();
+  
+
 
   @override
   void initState() {
@@ -63,9 +63,8 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
       // 1. Synchronize overdue loans to the 'fines' collection
       await _synchronizeOverdueLoansToFinesCollection();
       if (!mounted) return;
-      setState(() {
-        _isSyncing = false;
-      });
+      setState(() { _isSyncing = false; });
+
 
       // 2. Listen to the 'fines' collection for unpaid fines
       _finesSubscription?.cancel(); // Cancel any previous subscription
@@ -75,28 +74,24 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
           List<FineDetailModel> details = [];
           // Fetch user and book details for each FineModel to create FineDetailModel
           for (var fineModel in unpaidFines) {
-            // It's more efficient to batch these fetches if possible,
+            // It's more efficient to batch these fetches if possible, 
             // but for simplicity, fetching one by one.
             final user = await _userService.getUserById(fineModel.userID);
             final book = await _bookService.getBookById(fineModel.bookID);
 
             if (user != null && book != null) {
-              details.add(
-                FineDetailModel(
-                  // Pass the FineModel's ID to be used when paying
-                  fineDocId: fineModel.id,
-                  loanId: fineModel.loanID, // Store loanId from FineModel
-                  book: book, // Full BookModel
-                  user: user, // Full LibriUniUser
-                  daysOverdue: fineModel.daysOverdue, // From FineModel
-                  fineAmount: fineModel.fineAmount, // From FineModel
-                  // Add other fields to FineDetailModel if needed from FineModel (like createdDate)
-                ),
-              );
+              details.add(FineDetailModel(
+                // Pass the FineModel's ID to be used when paying
+                fineDocId: fineModel.id, 
+                loanId: fineModel.loanID, // Store loanId from FineModel
+                book: book, // Full BookModel
+                user: user, // Full LibriUniUser
+                daysOverdue: fineModel.daysOverdue, // From FineModel
+                fineAmount: fineModel.fineAmount, // From FineModel
+                // Add other fields to FineDetailModel if needed from FineModel (like createdDate)
+              ));
             } else {
-              print(
-                "Could not find user (${fineModel.userID}) or book (${fineModel.bookID}) for fine ${fineModel.id}",
-              );
+              print("Could not find user (${fineModel.userID}) or book (${fineModel.bookID}) for fine ${fineModel.id}");
             }
           }
           if (mounted) {
@@ -115,16 +110,16 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
               _isSyncing = false;
             });
           }
-        },
+        }
       );
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = "Initialization error: ${e.toString()}";
-          _isLoading = false;
-          _isSyncing = false;
-        });
-      }
+        if (mounted) {
+           setState(() {
+            _errorMessage = "Initialization error: ${e.toString()}";
+            _isLoading = false;
+            _isSyncing = false;
+          });
+        }
     }
   }
 
@@ -147,50 +142,40 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
           overdueLoansCompleter.completeError(e);
         }
         tempLoanSub?.cancel();
-      },
+      }
     );
-
+    
     List<LoanModel> activeOverdueLoans;
     try {
-      activeOverdueLoans = await overdueLoansCompleter.future.timeout(
-        const Duration(seconds: 20),
-      );
+        activeOverdueLoans = await overdueLoansCompleter.future.timeout(const Duration(seconds: 20));
     } catch (e) {
-      print("Error or timeout fetching overdue loans for sync: $e");
-      if (mounted) {
-        setState(() {
-          _errorMessage = "Could not sync fines: Error fetching loans.";
-        });
-      }
-      return; // Stop sync if loans can't be fetched
+        print("Error or timeout fetching overdue loans for sync: $e");
+        if (mounted) {
+            setState(() { _errorMessage = "Could not sync fines: Error fetching loans."; });
+        }
+        return; // Stop sync if loans can't be fetched
     }
+
 
     for (var loan in activeOverdueLoans) {
       if (!mounted) break; // Check mounted state in long loops
       final book = await _bookService.getBookById(loan.bookId);
-      final user = await _userService.getUserById(
-        loan.userId,
-      ); // loan.userId should be doc ID
+      final user = await _userService.getUserById(loan.userId); // loan.userId should be doc ID
 
       if (book != null && user != null) {
         try {
-          await _fineService.ensureFineRecord(
-            loan: loan,
-            book: book,
-            user: user,
-          );
+          await _fineService.ensureFineRecord(loan: loan, book: book, user: user);
         } catch (e) {
           print("Error ensuring fine record for loan ${loan.id}: $e");
           // Continue to next loan, but log error
         }
       } else {
-        print(
-          "Skipping fine sync for loan ${loan.id}: Missing book or user details.",
-        );
+         print("Skipping fine sync for loan ${loan.id}: Missing book or user details.");
       }
     }
     print("Fine synchronization process complete.");
   }
+
 
   void _performSearch() {
     final query = _searchController.text.toLowerCase();
@@ -199,17 +184,15 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
       if (query.isEmpty) {
         _filteredFineDetails = List.from(_allFineDetails);
       } else {
-        _filteredFineDetails =
-            _allFineDetails.where((fineDetail) {
-              final userName = fineDetail.user.name.toLowerCase();
-              final userIdString =
-                  fineDetail.user.userIdString
-                      .toLowerCase(); // Assuming FineDetailModel.user has userIdString
-              return userName.contains(query) || userIdString.contains(query);
-            }).toList();
+        _filteredFineDetails = _allFineDetails.where((fineDetail) {
+          final userName = fineDetail.user.name.toLowerCase();
+          final bookTitle = fineDetail.book.title.toLowerCase();
+          return userName.contains(query) || bookTitle.contains(query);
+        }).toList();
       }
     });
   }
+
 
   @override
   void dispose() {
@@ -220,8 +203,7 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
   }
 
   // This method now orchestrates all updates
-  Future<void> _processFinePayment(FineDetailModel fineDetail) async {
-    // fineDetail now includes fineDocId
+  Future<void> _processFinePayment(FineDetailModel fineDetail) async { // fineDetail now includes fineDocId
     try {
       final now = Timestamp.now();
 
@@ -237,9 +219,7 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Fine for ${fineDetail.book.title} by ${fineDetail.user.name} paid successfully.',
-            ),
+            content: Text('Fine for ${fineDetail.book.title} by ${fineDetail.user.name} paid successfully.'),
             backgroundColor: AppColors.successColor,
           ),
         );
@@ -268,28 +248,14 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
         return AlertDialog(
           title: Text('Fine Details: ${fineDetail.user.name}'),
           content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  'User ID: ${fineDetail.user.userIdString}',
-                ), // Assuming FineDetailModel.user has userIdString
-                Text(
-                  'Book: ${fineDetail.book.title} (${fineDetail.book.tag} Tag)',
-                ),
-                Text('Loan ID: ${fineDetail.loanId}'), // From FineDetailModel
-                // Text('Fine Record ID: ${fineDetail.fineDocId}'), // For debugging
-                Text(
-                  'Days Overdue: ${fineDetail.daysOverdue}',
-                ), // From FineDetailModel
-                Text(
-                  'Fine Amount: ${_currencyFormat.format(fineDetail.fineAmount)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
+            child: ListBody(children: <Widget>[
+              Text('User ID: ${fineDetail.user.userIdString}'), // Assuming FineDetailModel.user has userIdString
+              Text('Book: ${fineDetail.book.title} (${fineDetail.book.tag} Tag)'),
+              Text('Loan ID: ${fineDetail.loanId}'), // From FineDetailModel
+              // Text('Fine Record ID: ${fineDetail.fineDocId}'), // For debugging
+              Text('Days Overdue: ${fineDetail.daysOverdue}'), // From FineDetailModel
+              Text('Fine Amount: ${_currencyFormat.format(fineDetail.fineAmount)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ]),
           ),
           actions: [
             TextButton(
@@ -297,13 +263,10 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.successColor,
-                foregroundColor: AppColors.textColorLight,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.successColor, foregroundColor: AppColors.textColorLight),
               onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _confirmPaymentDialog(fineDetail);
+                Navigator.of(dialogContext).pop(); 
+                _confirmPaymentDialog(fineDetail); 
               },
               child: const Text('Process Payment'),
             ),
@@ -314,94 +277,73 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
   }
 
   void _confirmPaymentDialog(FineDetailModel fineDetail) {
-    showDialog(
-      context: context,
-      builder: (BuildContext confirmDialogContext) {
-        return AlertDialog(
-          title: const Text('Confirm Payment'),
-          content: Text(
-            'Are you sure you want to mark the fine for "${fineDetail.book.title}" (User: ${fineDetail.user.name}) as paid?',
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.of(confirmDialogContext).pop(),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
+     showDialog(
+        context: context,
+        builder: (BuildContext confirmDialogContext) {
+          return AlertDialog(
+            title: const Text('Confirm Payment'),
+            content: Text('Are you sure you want to mark the fine for "${fineDetail.book.title}" (User: ${fineDetail.user.name}) as paid?'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(confirmDialogContext).pop(),
               ),
-              child: const Text(
-                'Confirm Payment',
-                style: TextStyle(color: AppColors.textColorLight),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
+                child: const Text('Confirm Payment', style: TextStyle(color: AppColors.textColorLight)),
+                onPressed: () async { 
+                  Navigator.of(confirmDialogContext).pop(); 
+                  await _processFinePayment(fineDetail); 
+                },
               ),
-              onPressed: () async {
-                Navigator.of(confirmDialogContext).pop();
-                await _processFinePayment(fineDetail);
-              },
-            ),
-          ],
-        );
-      },
-    );
+            ],
+          );
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     Widget bodyContent;
     if (_isLoading && _isSyncing) {
-      bodyContent = const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 10),
-            Text("Syncing fine records..."),
-          ],
-        ),
-      );
+      bodyContent = const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [CircularProgressIndicator(), SizedBox(height: 10), Text("Syncing fine records...")]));
     } else if (_isLoading) {
       bodyContent = const Center(child: CircularProgressIndicator());
     } else if (_errorMessage.isNotEmpty) {
-      bodyContent = Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            _errorMessage,
-            style: const TextStyle(color: AppColors.dangerColor, fontSize: 16),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
+      bodyContent = Center(child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(_errorMessage, style: const TextStyle(color: AppColors.dangerColor, fontSize: 16), textAlign: TextAlign.center,),
+      ));
     } else {
       bodyContent = Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(/* ... Search Bar ... */),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by user name or book title...',
+                prefixIcon: const Icon(Icons.search, color: AppColors.primaryColor),
+                filled: true,
+                fillColor: AppColors.cardBackgroundColor, // Or AppColors.backgroundColor if preferred
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: const BorderSide(color: AppColors.secondaryColor, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 15.0),
+              ),
+            ),
           ),
           if (_filteredFineDetails.isEmpty && _searchController.text.isNotEmpty)
-            const Expanded(
-              child: Center(
-                child: Text(
-                  'No fines found for your search criteria.',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            )
+            const Expanded(child: Center(child: Text('No fines found for your search criteria.', style: TextStyle(fontSize: 16))))
           else if (_allFineDetails.isEmpty)
-            const Expanded(
-              child: Center(
-                child: Text(
-                  'No unpaid fines to display.',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            )
+             const Expanded(child: Center(child: Text('No unpaid fines to display.', style: TextStyle(fontSize: 16))))
           else
             Expanded(
-              child: SingleChildScrollView(
-                /* ... DataTable ... */
+              child: SingleChildScrollView( /* ... DataTable ... */ 
                 scrollDirection: Axis.vertical,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -409,126 +351,34 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
                   child: DataTable(
                     // ... columns (User Name, User ID, Book Title, Days Overdue, Fine Amount, Actions)
                     columns: const [
-                      DataColumn(
-                        label: Text(
-                          'User Name',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColorDark,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'User ID',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColorDark,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Book Title',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColorDark,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Days Overdue',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColorDark,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Fine Amount',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColorDark,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Actions',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColorDark,
-                          ),
-                        ),
-                      ),
-                    ],
-                    rows:
-                        _filteredFineDetails.map((fineDetail) {
-                          // Use fineDetail of type FineDetailModel
-                          final fineAmountColor =
-                              fineDetail.daysOverdue > 10
-                                  ? AppColors.dangerColor
-                                  : Colors.red.shade400;
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(fineDetail.user.name)),
-                              DataCell(
-                                Text(fineDetail.user.userIdString),
-                              ), // Assuming FineDetailModel.user has userIdString
-                              DataCell(
-                                Tooltip(
-                                  message:
-                                      "${fineDetail.book.title} (Tag: ${fineDetail.book.tag})",
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 150,
-                                    ),
-                                    child: Text(
-                                      fineDetail.book.title,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Center(
-                                  child: Text(
-                                    fineDetail.daysOverdue.toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  _currencyFormat.format(fineDetail.fineAmount),
-                                  style: TextStyle(
-                                    color: fineAmountColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.payment_outlined,
-                                    color: AppColors.primaryColor,
-                                    size: 26,
-                                  ),
-                                  tooltip: 'View Details & Process Payment',
-                                  onPressed:
-                                      () => _showFineDetailsAndPaymentDialog(
-                                        fineDetail,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
+                        DataColumn(label: Text('User Name', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
+                        DataColumn(label: Text('User ID', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
+                        DataColumn(label: Text('Book Title', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
+                        DataColumn(label: Text('Days Overdue', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
+                        DataColumn(label: Text('Fine Amount', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
+                        DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
+                      ],
+                    rows: _filteredFineDetails.map((fineDetail) { // Use fineDetail of type FineDetailModel
+                      final fineAmountColor = fineDetail.daysOverdue > 10
+                          ? AppColors.dangerColor
+                          : Colors.red.shade400;
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(fineDetail.user.name)),
+                          DataCell(Text(fineDetail.user.userIdString)), // Assuming FineDetailModel.user has userIdString
+                          DataCell(Tooltip(
+                            message: "${fineDetail.book.title} (Tag: ${fineDetail.book.tag})",
+                            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 150), child: Text(fineDetail.book.title, overflow: TextOverflow.ellipsis)),
+                          )),
+                          DataCell(Center(child: Text(fineDetail.daysOverdue.toString(), style: const TextStyle(fontWeight: FontWeight.bold)))),
+                          DataCell(Text(_currencyFormat.format(fineDetail.fineAmount), style: TextStyle(color: fineAmountColor, fontWeight: FontWeight.bold, fontSize: 15))),
+                          DataCell(IconButton(
+                            icon: const Icon(Icons.payment_outlined, color: AppColors.primaryColor, size: 26),
+                            tooltip: 'View Details & Process Payment',
+                            onPressed: () => _showFineDetailsAndPaymentDialog(fineDetail),
+                          )),
+                        ]);
+                    }).toList(),
                   ),
                 ),
               ),
@@ -541,20 +391,9 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
       appBar: AppBar(title: const Text('Manage Fines')),
       body: bodyContent,
       floatingActionButton: FloatingActionButton.extended(
-        onPressed:
-            _isSyncing ? null : _initializeFinesData, // Allow manual re-sync
+        onPressed: _isSyncing ? null : _initializeFinesData, // Allow manual re-sync
         label: const Text('Refresh Fines'),
-        icon:
-            _isSyncing
-                ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-                : const Icon(Icons.sync),
+        icon: _isSyncing ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.sync),
         backgroundColor: _isSyncing ? Colors.grey : AppColors.secondaryColor,
       ),
     );
