@@ -163,144 +163,119 @@ class _BorrowedItemsScreenState extends State<BorrowedItemsScreen> {
             ),
           ),
           Expanded(
-            child:
-                _filteredBorrowedItems.isEmpty
-                    ? const Center(child: Text('No borrowed items found.'))
-                    : SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: DataTable(
-                          columnSpacing: 12.0,
-                          dataRowMinHeight: 48.0,
-                          dataRowMaxHeight: 60.0,
-                          headingRowColor: MaterialStateColor.resolveWith(
-                            (_) => AppColors.primaryColor.withOpacity(0.1),
-                          ),
-                          columns: const [
-                            DataColumn(
-                              label: Text(
-                                'Book Title',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Code',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'ISBN',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Borrower ID',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Loan Date',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Overdue',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows:
-                              _filteredBorrowedItems.map((item) {
-                                return DataRow(
-                                  cells: [
-                                    DataCell(
-                                      ConstrainedBox(
-                                        constraints: const BoxConstraints(
-                                          maxWidth: 150,
-                                        ),
-                                        child: Text(
-                                          item.bookTitle,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: AppColors.textColorDark,
+            child: _filteredBorrowedItems.isEmpty
+                ? const Center(child: Text('No borrowed items found.'))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                    itemCount: _filteredBorrowedItems.length,
+                    itemBuilder: (context, index) {
+                      final item = _filteredBorrowedItems[index];
+                      
+                      Color borderColor;
+                      String overdueStatusText;
+                      IconData statusIcon;
+
+                      if (item.isOverdue) {
+                        borderColor = AppColors.dangerColor; // Red outline
+                        overdueStatusText = 'OVERDUE';
+                        statusIcon = Icons.warning_amber_rounded;
+                      } else {
+                        borderColor = AppColors.successColor; // Green outline
+                        overdueStatusText = 'On Loan';
+                        statusIcon = Icons.check_circle_outline_rounded;
+                      }
+
+                      return Card(
+                        elevation: 3.0,
+                        margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          side: BorderSide(color: borderColor, width: 1.5),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.bookTitle,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                        color: AppColors.textColorDark,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    decoration: BoxDecoration(
+                                      color: borderColor.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(statusIcon, color: borderColor, size: 16),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          overdueStatusText,
+                                          style: TextStyle(
+                                            color: borderColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                    DataCell(
-                                      Text(
-                                        item.code,
-                                        style: const TextStyle(
-                                          color: AppColors.textColorDark,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        item.isbn,
-                                        style: const TextStyle(
-                                          color: AppColors.textColorDark,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        item.borrowerId,
-                                        style: const TextStyle(
-                                          color: AppColors.textColorDark,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        '${item.loanDate.day}/${item.loanDate.month}/${item.loanDate.year}',
-                                        style: const TextStyle(
-                                          color: AppColors.textColorDark,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Icon(
-                                        item.isOverdue
-                                            ? Icons.cancel
-                                            : Icons.check_circle,
-                                        color:
-                                            item.isOverdue
-                                                ? AppColors.dangerColor
-                                                : AppColors.successColor,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8.0),
+                              _buildDetailRow('Borrower:', item.borrowerName),
+                              _buildDetailRow('Borrower ID:', item.borrowerId),
+                              const Divider(height: 12, thickness: 0.5),
+                              _buildDetailRow('Book Code:', item.code),
+                              _buildDetailRow('ISBN:', item.isbn),
+                              _buildDetailRow('Loan Date:', '${item.loanDate.day}/${item.loanDate.month}/${item.loanDate.year}'),
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper widget to build detail rows consistently
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label ',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              color: AppColors.textColorDark.withOpacity(0.8),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

@@ -28,7 +28,6 @@ import '../screens/admin/manage_news_screen.dart';
 import '/models/book_model.dart';
 import '/screens/staff/staff_dashboard_screen.dart';
 import '/screens/staff/search_catalog_screen.dart';
-import '/screens/staff/manage_books_screen.dart';
 import '/screens/staff/add_edit_book_screen.dart';
 import '/screens/staff/view_users_screen.dart';
 import '/screens/staff/news_item_detail_screen.dart';
@@ -44,7 +43,7 @@ import '../screens/staff/staff_profile_screen.dart'; //NEW
 import '../screens/staff/staff_book_detail_screen.dart'; //NEW
 import '../screens/staff/manage_rooms_screen.dart'
     as staff_manage_rooms; // Alias for staff screen
-import '../models/room.dart'; // Ensure Room model is imported
+import '../models/room.dart'; 
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -117,10 +116,11 @@ class AppRouter {
         path: '/staff/borrowed-items',
         builder: (context, state) => const BorrowedItemsScreen(),
       ),
-      GoRoute(
-        path: '/staff/manage-books',
-        builder: (context, state) => const ManageBooksScreen(),
-      ),
+      // GoRoute(
+      //   path: '/staff/manage-books',
+      //   builder: (context, state) => const ManageBooksScreen(),
+      // ), 
+      // THIS PAGE IS DELETED AND IS NO LONGER NEEDED
       GoRoute(
         path: '/staff/manage-fines',
         builder: (context, state) => const ManageFinesScreen(),

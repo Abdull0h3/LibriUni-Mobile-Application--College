@@ -124,38 +124,19 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
   }
 
   Future<void> _synchronizeOverdueLoansToFinesCollection() async {
-    // This stream gives ALL overdue loans. We process them once.
-    // Consider if this should be a one-time fetch: .get() instead of .listen()
-    // TODO: note
-    final overdueLoansCompleter = Completer<List<LoanModel>>();
-    StreamSubscription? tempLoanSub;
-
-    tempLoanSub = _loanService.getOverdueLoansStream().listen(
-      (loans) {
-        if (!overdueLoansCompleter.isCompleted) {
-          overdueLoansCompleter.complete(loans);
-        }
-        tempLoanSub?.cancel(); // We only need the first emission for this sync
-      },
-      onError: (e) {
-        if (!overdueLoansCompleter.isCompleted) {
-          overdueLoansCompleter.completeError(e);
-        }
-        tempLoanSub?.cancel();
-      }
-    );
-    
     List<LoanModel> activeOverdueLoans;
     try {
-        activeOverdueLoans = await overdueLoansCompleter.future.timeout(const Duration(seconds: 20));
+      // Use a one-time fetch instead of a stream for synchronization
+      activeOverdueLoans = await _loanService.getOverdueLoans().timeout(const Duration(seconds: 20));
     } catch (e) {
-        print("Error or timeout fetching overdue loans for sync: $e");
-        if (mounted) {
-            setState(() { _errorMessage = "Could not sync fines: Error fetching loans."; });
-        }
-        return; // Stop sync if loans can't be fetched
+      print("Error or timeout fetching overdue loans for sync: $e");
+      if (mounted) {
+        setState(() { _errorMessage = "Could not sync fines: Error fetching loans."; });
+      }
+      return; // Stop sync if loans can't be fetched
     }
 
+    if (!mounted) return;
 
     for (var loan in activeOverdueLoans) {
       if (!mounted) break; // Check mounted state in long loops
@@ -343,44 +324,69 @@ class _ManageFinesScreenState extends State<ManageFinesScreen> {
              const Expanded(child: Center(child: Text('No unpaid fines to display.', style: TextStyle(fontSize: 16))))
           else
             Expanded(
-              child: SingleChildScrollView( /* ... DataTable ... */ 
-                scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 12.0),
-                  child: DataTable(
-                    // ... columns (User Name, User ID, Book Title, Days Overdue, Fine Amount, Actions)
-                    columns: const [
-                        DataColumn(label: Text('User Name', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
-                        DataColumn(label: Text('User ID', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
-                        DataColumn(label: Text('Book Title', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
-                        DataColumn(label: Text('Days Overdue', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
-                        DataColumn(label: Text('Fine Amount', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
-                        DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textColorDark))),
-                      ],
-                    rows: _filteredFineDetails.map((fineDetail) { // Use fineDetail of type FineDetailModel
-                      final fineAmountColor = fineDetail.daysOverdue > 10
-                          ? AppColors.dangerColor
-                          : Colors.red.shade400;
-                      return DataRow(
-                        cells: [
-                          DataCell(Text(fineDetail.user.name)),
-                          DataCell(Text(fineDetail.user.userIdString)), // Assuming FineDetailModel.user has userIdString
-                          DataCell(Tooltip(
-                            message: "${fineDetail.book.title} (Tag: ${fineDetail.book.tag})",
-                            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 150), child: Text(fineDetail.book.title, overflow: TextOverflow.ellipsis)),
-                          )),
-                          DataCell(Center(child: Text(fineDetail.daysOverdue.toString(), style: const TextStyle(fontWeight: FontWeight.bold)))),
-                          DataCell(Text(_currencyFormat.format(fineDetail.fineAmount), style: TextStyle(color: fineAmountColor, fontWeight: FontWeight.bold, fontSize: 15))),
-                          DataCell(IconButton(
-                            icon: const Icon(Icons.payment_outlined, color: AppColors.primaryColor, size: 26),
-                            tooltip: 'View Details & Process Payment',
-                            onPressed: () => _showFineDetailsAndPaymentDialog(fineDetail),
-                          )),
-                        ]);
-                    }).toList(),
-                  ),
-                ),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                itemCount: _filteredFineDetails.length,
+                itemBuilder: (context, index) {
+                  final fineDetail = _filteredFineDetails[index];
+                  final fineAmount = fineDetail.fineAmount;
+                  
+                  Color borderColor;
+                  double borderWidth = 1.5; // Default border width
+
+                  if (fineAmount >= 15) {
+                    borderColor = AppColors.dangerColor; // Dark red
+                  } else {
+                    borderColor = Colors.red.shade300; // Light red
+                  }
+
+                  return Card(
+                    elevation: 3.0,
+                    margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      side: BorderSide(color: borderColor, width: borderWidth),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(12.0),
+                      leading: IconButton(
+                        icon: Icon(Icons.payment_outlined, color: AppColors.primaryColor, size: 30),
+                        tooltip: 'Process Payment',
+                        onPressed: () => _showFineDetailsAndPaymentDialog(fineDetail),
+                      ),
+                      title: Text(
+                        fineDetail.user.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textColorDark),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 4.0),
+                          Text('User ID: ${fineDetail.user.userIdString}', style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                          const SizedBox(height: 2.0),
+                          Text(
+                            'Book: ${fineDetail.book.title} (${fineDetail.book.tag})',
+                            style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: 2.0),
+                          Text('Days Overdue: ${fineDetail.daysOverdue}', style: TextStyle(fontSize: 13, color: Colors.grey.shade800, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                      trailing: Text(
+                        _currencyFormat.format(fineAmount),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: borderColor, // Use the same color as the border for emphasis
+                        ),
+                      ),
+                      onTap: () => _showFineDetailsAndPaymentDialog(fineDetail), // Allow tapping whole card
+                    ),
+                  );
+                },
               ),
             ),
         ],

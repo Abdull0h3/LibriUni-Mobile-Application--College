@@ -16,7 +16,7 @@ class StaffDashboardScreen extends StatelessWidget {
     final userName = authProvider.user?.name ?? 'Staff';
     final staffId = authProvider.user?.id ?? '';
 
-    // Define the dashboard items
+    // Define all dashboard items, including Scan QR
     final List<DashboardItem> dashboardItems = [
       DashboardItem(
         icon: Icons.menu_book,
@@ -38,28 +38,27 @@ class StaffDashboardScreen extends StatelessWidget {
         title: 'Reserved Rooms',
         onTap: () => context.push('/staff/reserved-rooms'),
       ),
-      // Added Manage Books to the dashboard for direct access as per its wireframe being prominent
-      DashboardItem(
-        icon: Icons.rule_folder_outlined,
-        title: 'Manage Books',
-        onTap: () => context.push('/staff/manage-books'),
-      ),
+      // DashboardItem( // Removed Manage Books
+      //   icon: Icons.rule_folder_outlined,
+      //   title: 'Manage Books',
+      //   onTap: () => context.push('/staff/manage-books'),
+      // ),
       DashboardItem(
         icon: Icons.attach_money,
         title: 'Manage Fines',
         onTap: () => context.push('/staff/manage-fines'),
       ),
       DashboardItem(
-        icon: Icons.qr_code_scanner,
-        title: 'Scan QR / Check-In',
-        onTap: () => context.push('/staff/scan-qr'),
-      ), // Scan QR can handle check-ins
-      DashboardItem(
         icon: Icons.campaign,
         title: 'News & Events',
         onTap: () => context.push('/staff/news-events'),
       ),
       // DashboardItem(icon: Icons.assignment_return, title: 'Checked-In Returns', onTap: () => Navigator.pushNamed(context, AppRoutes.checkedInReturns)),
+      DashboardItem( // Scan QR / Check-In is now the last item in this list
+        icon: Icons.qr_code_scanner,
+        title: 'Scan QR / Check-In',
+        onTap: () => context.push('/staff/scan-qr'),
+      ),
     ];
 
     return Scaffold(
@@ -127,32 +126,69 @@ class StaffDashboardScreen extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          // Removed the search bar Padding widget
-          Expanded(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final double screenPadding = 12.0; // Matches the padding you'll use for the content
+          final double crossAxisSpacing = 12.0;
+          final double mainAxisSpacing = 12.0;
+          final int crossAxisCount = 2;
+          final double childAspectRatio = 1.2;
+
+          // Calculate the width available for the grid content after screen padding
+          final double availableWidthForGridContent = constraints.maxWidth - (2 * screenPadding);
+          
+          // Calculate the width of a single cell
+          final double cellWidth = (availableWidthForGridContent - ((crossAxisCount - 1) * crossAxisSpacing)) / crossAxisCount;
+          // Calculate the height of a single cell
+          final double cellHeight = cellWidth / childAspectRatio;
+
+          bool isLastItemSpecial = dashboardItems.length % 2 != 0;
+          int gridItemCount = isLastItemSpecial ? dashboardItems.length - 1 : dashboardItems.length;
+
+          return SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(12.0), // Added padding to the GridView's parent
-              child: GridView.builder(
-                itemCount: dashboardItems.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12.0,
-                  mainAxisSpacing: 12.0,
-                  childAspectRatio: 1.2,
-                ),
-                itemBuilder: (context, index) {
-                  final item = dashboardItems[index];
-                  return DashboardGridItem(
-                    icon: item.icon,
-                    title: item.title,
-                    onTap: item.onTap,
-                  );
-                },
+              padding: EdgeInsets.all(screenPadding),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (gridItemCount > 0) // Only build GridView if there are items for it
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: gridItemCount,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: crossAxisSpacing,
+                        mainAxisSpacing: mainAxisSpacing,
+                        childAspectRatio: childAspectRatio,
+                      ),
+                      itemBuilder: (context, index) {
+                        final item = dashboardItems[index];
+                        return DashboardGridItem(
+                          icon: item.icon,
+                          title: item.title,
+                          onTap: item.onTap,
+                        );
+                      },
+                    ),
+                  if (isLastItemSpecial) ...[
+                    if (gridItemCount > 0) // Add spacing only if GridView was built
+                      SizedBox(height: mainAxisSpacing), // Mimic mainAxisSpacing
+                    SizedBox(
+                      width: double.infinity, // This will take the full width within the Padded Column
+                      height: cellHeight,    // Match the height of other grid items
+                      child: DashboardGridItem(
+                        icon: dashboardItems.last.icon,
+                        title: dashboardItems.last.title,
+                        onTap: dashboardItems.last.onTap,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

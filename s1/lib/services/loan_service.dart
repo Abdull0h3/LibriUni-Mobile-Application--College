@@ -92,6 +92,18 @@ class LoanService {
   }
 
   //for overdue loans
+  // Get all overdue loans (active and past due date) - ONE TIME FETCH
+  Future<List<LoanModel>> getOverdueLoans() async {
+    final now = Timestamp.now();
+    final querySnapshot = await _loansCollection
+        .where('returnDate', isEqualTo: null)
+        .where('dueDate', isLessThan: now)
+        .orderBy('dueDate', descending: false)
+        .get();
+    return querySnapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  // Get all overdue loans (active and past due date) - STREAM
   Stream<List<LoanModel>> getOverdueLoansStream() {
     return _loansCollection
         .where('returnDate', isNull: true) // Loan is still active

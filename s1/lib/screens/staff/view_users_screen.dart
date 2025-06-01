@@ -118,133 +118,83 @@ class _ViewUsersScreenState extends State<ViewUsersScreen> {
             ),
           ),
           Expanded(
-            child:
-                _filteredUsers.isEmpty
-                    ? const Center(child: Text('No users found.'))
-                    : SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: DataTable(
-                          columnSpacing: 10.0,
-                          headingRowColor: MaterialStateColor.resolveWith(
-                            (_) => AppColors.primaryColor.withOpacity(0.1),
-                          ),
-                          columns: const [
-                            DataColumn(
-                              label: Text(
-                                'Name',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'User ID',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Email',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Overdue',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Active',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textColorDark,
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows:
-                              _filteredUsers.map((user) {
-                                final count = _overdueCounts[user.id] ?? 0;
-                                final statusText =
-                                    count == 0
-                                        ? 'None'
-                                        : '$count item${count > 1 ? 's' : ''} overdue';
-                                final statusColor =
-                                    count == 0
-                                        ? Colors.green.shade700
-                                        : Colors.red.shade700;
+            child: _filteredUsers.isEmpty
+                ? const Center(child: Text('No users found.'))
+                : ListView.builder(
+                    itemCount: _filteredUsers.length,
+                    itemBuilder: (context, index) {
+                      final user = _filteredUsers[index];
+                      final overdueCount = _overdueCounts[user.id] ?? 0;
+                      final overdueStatusText = overdueCount == 0
+                          ? 'None Overdue'
+                          : '$overdueCount item${overdueCount > 1 ? 's' : ''} overdue';
+                      final overdueStatusColor = overdueCount == 0
+                          ? Colors.green.shade700
+                          : Colors.red.shade700;
 
-                                return DataRow(
-                                  cells: [
-                                    DataCell(
-                                      Text(
-                                        user.name,
-                                        style: const TextStyle(
-                                          color: AppColors.textColorDark,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        user.userIdString,
-                                        style: const TextStyle(
-                                          color: AppColors.textColorDark,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      ConstrainedBox(
-                                        constraints: const BoxConstraints(
-                                          maxWidth: 150,
-                                        ),
-                                        child: Text(
-                                          user.email,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: AppColors.textColorDark,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        statusText,
-                                        style: TextStyle(color: statusColor),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Icon(
-                                        user.isActive
-                                            ? Icons.check_circle
-                                            : Icons.cancel,
-                                        color:
-                                            user.isActive
-                                                ? Colors.green.shade600
-                                                : Colors.red.shade600,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                        elevation: 2.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
                         ),
-                      ),
-                    ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(12.0),
+                          leading: Icon(
+                            user.isActive ? Icons.check_circle : Icons.cancel,
+                            color: user.isActive ? Colors.green.shade600 : Colors.red.shade600,
+                            size: 36.0,
+                          ),
+                          title: Text(
+                            user.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textColorDark,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 4.0),
+                              Text(
+                                'ID: ${user.userIdString}',
+                                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                              ),
+                              const SizedBox(height: 2.0),
+                              Text(
+                                user.email,
+                                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                            decoration: BoxDecoration(
+                              color: overdueStatusColor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: Text(
+                              overdueStatusText,
+                              style: TextStyle(
+                                color: overdueStatusColor,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          onTap: () {
+                            // Optional: Implement navigation to a user detail screen
+                            // or show a dialog with more actions.
+                            print('Tapped on user: ${user.name}');
+                          },
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
