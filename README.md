@@ -131,19 +131,6 @@ Traditional library systems are often outdated, desktop-bound, and lack modern u
 
 ---
 
-## 📱 Screenshots
-
-> *Add screenshots here showcasing the main features of your app*
-
-| Student Dashboard | Book Search | Room Booking |
-|:-----------------:|:-----------:|:------------:|
-| ![Dashboard](screenshots/dashboard.png) | ![Search](screenshots/search.png) | ![Booking](screenshots/booking.png) |
-
-| Staff Loan Management | Admin Analytics | Dark Mode |
-|:---------------------:|:---------------:|:---------:|
-| ![Loans](screenshots/loans.png) | ![Analytics](screenshots/analytics.png) | ![Dark](screenshots/dark.png) |
-
----
 
 ## 🚀 Getting Started
 
@@ -364,17 +351,11 @@ Please ensure your code follows the project's coding standards and includes appr
 
 For a complete list of issues, please check the [Issues](https://github.com/yourusername/LibriUni-Mobile-Application--College/issues) page.
 
----
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## 👥 Authors & Contributors
 
-- **Your Name** - *Initial work* - [YourGitHub](https://github.com/yourusername)
+- **Abdullah Bahbry** - @Abdull0h3
 
 See also the list of [contributors](https://github.com/yourusername/LibriUni-Mobile-Application--College/contributors) who participated in this project.
 
