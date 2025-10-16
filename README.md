@@ -1,7 +1,6 @@
 # 📚 LibriUni - College Library Management System
 
 <div align="center">
-  <img src="assets/libriuni_logo_combination.png" alt="LibriUni Logo" width="200"/>
   
   [![Flutter](https://img.shields.io/badge/Flutter-3.7+-02569B?logo=flutter)](https://flutter.dev)
   [![Firebase](https://img.shields.io/badge/Firebase-Enabled-orange?logo=firebase)](https://firebase.google.com)
@@ -352,12 +351,6 @@ Please ensure your code follows the project's coding standards and includes appr
 For a complete list of issues, please check the [Issues](https://github.com/yourusername/LibriUni-Mobile-Application--College/issues) page.
 
 
-
-## 👥 Authors & Contributors
-
-- **Abdullah Bahbry** - @Abdull0h3
-
-See also the list of [contributors](https://github.com/yourusername/LibriUni-Mobile-Application--College/contributors) who participated in this project.
 
 ---
 
